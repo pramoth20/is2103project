@@ -5,6 +5,7 @@
 package merlionhotelsystemjpaclient;
 
 import ejb.session.stateless.EmployeeSessionBeanRemote;
+import entity.Employee;
 import javax.ejb.EJB;
 
 /**
@@ -21,8 +22,8 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Long id= employeeSessionBeanRemote.createEmployeeById();
-        System.out.println(id);
+        Employee employee = employeeSessionBeanRemote.getEmployeeById(1l);
+        System.out.println(employee.getEmployeeId());
         
     }
 }

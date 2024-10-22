@@ -33,6 +33,14 @@ public class Employee implements Serializable {
 
     public Employee() {
     }
+
+    public Employee(String username, String password, String position) {
+        this.username = username;
+        this.password = password;
+        this.position = position;
+    }
+    
+    
     
  
 

@@ -5,9 +5,12 @@
 package ejb.session.singleton;
 
 import ejb.session.stateless.EmployeeSessionBeanLocal;
+import entity.Employee;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.LocalBean;
+import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 

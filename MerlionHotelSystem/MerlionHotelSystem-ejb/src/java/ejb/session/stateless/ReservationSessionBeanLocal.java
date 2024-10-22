@@ -4,18 +4,13 @@
  */
 package ejb.session.stateless;
 
-import entity.Employee;
 import javax.ejb.Local;
 
 /**
  *
- * @author pramoth
+ * @author jwong
  */
 @Local
-public interface EmployeeSessionBeanLocal {
-
-    public Employee getEmployeeById(Long employeeId);
-
-    public Long createEmployee(Employee employee);
+public interface ReservationSessionBeanLocal {
     
 }

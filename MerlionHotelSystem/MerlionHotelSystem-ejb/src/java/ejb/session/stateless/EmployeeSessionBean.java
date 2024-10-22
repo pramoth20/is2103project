@@ -4,7 +4,7 @@
  */
 package ejb.session.stateless;
 
-import com.merlion.entity.Employee; // Import your Employee entity class
+import entity.Employee;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

@@ -22,3 +22,15 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+/MerlionHotelSystem/nbproject/private/
+/MerlionHotelSystem/MerlionHotelSystemJpaClient/nbproject/private/
+/MerlionHotelSystem/MerlionHotelSystem-ejb/nbproject/private/
+/MerlionHotelSystem/MerlionHotelSystemJpaLibrary/nbproject/private/
+/MerlionHotelSystem/MerlionHotelSystem-ejb/build/
+/MerlionHotelSystem/MerlionHotelSystemJpaLibrary/build/
+/MerlionHotelSystem/build/
+/MerlionHotelSystem/MerlionHotelSystemJpaLibrary/dist/
+/MerlionHotelSystem/MerlionHotelSystem-ejb/dist/
+/MerlionHotelSystem/dist/
+/MerlionHotelSystem/MerlionHotelSystemJpaClient/build/
+/MerlionHotelSystem/MerlionHotelSystemJpaClient/dist/

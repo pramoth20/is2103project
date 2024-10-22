@@ -4,15 +4,13 @@
  */
 package ejb.session.stateless;
 
-import entity.Employee;
 import javax.ejb.Remote;
 
 /**
  *
- * @author pramoth
+ * @author jwong
  */
 @Remote
-public interface EmployeeSessionBeanRemote {
-    public Employee getEmployeeById(Long employeeId);
-    public Long createEmployee(Employee employee);
+public interface ReservationSessionBeanRemote {
+    
 }

@@ -6,6 +6,7 @@ package merlionhotelsystemjpaclient;
 
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import entity.Employee;
+import java.util.List;
 import javax.ejb.EJB;
 
 /**
@@ -22,8 +23,17 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Employee employee = employeeSessionBeanRemote.getEmployeeById(1l);
-        System.out.println(employee.getEmployeeId());
+         List<Employee> employee = employeeSessionBeanRemote.retrieveAllEmployees();
+         for(Employee e: employee) {
+             //System.out.println(e + " " +  e.getEmployeeId());
+             System.out.println(e);
+         }
+             
+        //Employee employee = employeeSessionBeanRemote.getEmployeeById(1l);
+        
+        //System.out.println(employee.getEmployeeId());
+        
+        
         
     }
 }

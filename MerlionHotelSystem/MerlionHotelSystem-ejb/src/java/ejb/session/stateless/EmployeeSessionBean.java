@@ -5,9 +5,15 @@
 package ejb.session.stateless;
 
 import entity.Employee;
+import enums.EmployeeRole;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import util.exception.InvalidLoginCredentialException;
+import util.exception.EmployeeNotFoundException;
 
 /**
  *
@@ -37,11 +43,12 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
 //        em.persist(employee);
 //    }
     
-    
-    public Long createEmployee(Employee employee) {
+    //Create employee
+    public Employee createEmployee(String username, String password, EmployeeRole position) {
+        Employee employee = new Employee(username, password, position);
         em.persist(employee);
         em.flush();
-        return employee.getEmployeeId();
+        return employee;
     }  
     
 
@@ -50,4 +57,78 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     public Employee getEmployeeById(Long employeeId) {
         return em.find(Employee.class, employeeId);
     }
+    
+    
+    
+    @Override
+    public List<Employee> retrieveAllEmployees() {
+    Query query = em.createQuery("SELECT e FROM Employee e");
+    return query.getResultList();
+    }
+    
+    public Employee retrieveEmployeeByUsername(String username) throws EmployeeNotFoundException {
+        Query query = em.createQuery("SELECT e FROM Employee e WHERE e.username = :username");
+        query.setParameter("username", username);
+        
+        try {
+            return (Employee) query.getSingleResult();
+        } catch(NoResultException ex){
+            throw new EmployeeNotFoundException("Employee with username: " + username + " does not exist!");
+        }
+
+    }
+
+    public Employee login(String username, String password) throws InvalidLoginCredentialException {
+        try {
+            Employee employee = retrieveEmployeeByUsername(username);
+            if (employee.getPassword().equals(password)) {
+                 if (employee.isLoggedIn()) {
+                throw new InvalidLoginCredentialException("Employee is already logged in!");
+                 }
+                 employee.setLoggedIn(true);
+                 setEmployeeRole(employee);
+                 return employee;
+        } else {
+            throw new InvalidLoginCredentialException("Username does not exist or invalid password!");
+        }
+        }
+        catch (EmployeeNotFoundException ex) {
+        throw new InvalidLoginCredentialException("Username does not exist or invalid password!");
+        }                        
+    }
+    
+    private void setEmployeeRole(Employee employee) {
+        EmployeeRole role = employee.getPosition();
+        
+        switch (role) {
+            case SYSTEM_ADMINISTRATOR:
+                // Set permissions for system administrator
+                break;
+            case OPERATION_MANAGER:
+                // Set permissions for operation manager
+                break;
+            case SALES_MANAGER:
+                // Set permissions for sales manager
+                break;
+            case GUEST_RELATION_OFFICER:
+                // Set permissions for guest relation officer
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown role: " + role);
+    }
+    }
+    
+    @Override
+    public void employeeLogout(Employee employee) {
+        if (employee.isLoggedIn()) {
+            employee.setLoggedIn(false);
+        } else {
+            throw new IllegalStateException("Employee is not logged in!");
+        }
+    }
+        
+    
+    
+    
+    
 }

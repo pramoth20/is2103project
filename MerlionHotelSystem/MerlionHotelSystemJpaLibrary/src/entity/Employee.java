@@ -4,7 +4,9 @@
  */
 package entity;
 
+import enums.EmployeeRole;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,26 +24,26 @@ public class Employee implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
     
-//    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
     
-//    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 25)
     private String password;
     
 //    @Column(nullable = false, length = 50)
-    private String position;
+    private EmployeeRole position;
+    
+    private boolean loggedIn;
 
     public Employee() {
     }
 
-    public Employee(String username, String password, String position) {
+    public Employee(String username, String password, EmployeeRole position) {
         this.username = username;
         this.password = password;
         this.position = position;
-    }
-    
-    
-    
+        this.loggedIn = false;
+    }  
  
 
     //getters and setters
@@ -85,15 +87,23 @@ public class Employee implements Serializable {
     /**
      * @return the position
      */
-    public String getPosition() {
+    public EmployeeRole getPosition() {
         return position;
     }
 
     /**
      * @param position the position to set
      */
-    public void setPosition(String position) {
+    public void setPosition(EmployeeRole position) {
         this.position = position;
+    }
+    
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+    
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
     }
 
     @Override
@@ -118,7 +128,7 @@ public class Employee implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.Employee[ id=" + employeeId + " ]";
+        return "entity.Employee[ id=" + employeeId + " " + username + " ]";
     }
     
 }

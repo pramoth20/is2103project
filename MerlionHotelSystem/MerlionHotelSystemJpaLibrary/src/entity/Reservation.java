@@ -5,10 +5,18 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -25,9 +33,20 @@ public class Reservation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
+    
     private String roomNumber;
-    private boolean status;
-    private RoomType roomType;
+    private boolean isAllocated;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date reservationDate;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "Reservation_Rate",
+        joinColumns = @JoinColumn(name = "reservation_id"),
+        inverseJoinColumns = @JoinColumn(name = "rate_id")
+    )
+    private List<Rate> rates = new ArrayList<>();
     
     //Just added -> haven't put the constructor yet
     private String partnerReferenceNumber;
@@ -36,10 +55,10 @@ public class Reservation implements Serializable {
     public Reservation() {
     }
 
-    public Reservation(String roomNumber, boolean status, RoomType roomType) {
+    public Reservation(String roomNumber, boolean status) {
         this.roomNumber = roomNumber;
-        this.status = status;
-        this.roomType = roomType;
+        this.isAllocated = status;
+     
     }
     
     
@@ -65,33 +84,23 @@ public class Reservation implements Serializable {
     }
 
     /**
-     * @return the status
+     * @return the isAllocated
      */
-    public boolean isStatus() {
-        return status;
+    public boolean isIsAllocated() {
+        return isAllocated;
     }
 
     /**
-     * @param status the status to set
+     * @param isAllocated the isAllocated to set
      */
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setIsAllocated(boolean isAllocated) {
+        this.isAllocated = isAllocated;
     }
 
     /**
      * @return the roomType
      */
-    public RoomType getRoomType() {
-        return roomType;
-    }
-
-    /**
-     * @param roomType the roomType to set
-     */
-    public void setRoomType(RoomType roomType) {
-        this.roomType = roomType;
-    }
-
+  
     @Override
     public int hashCode() {
         int hash = 0;

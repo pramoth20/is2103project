@@ -67,7 +67,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
         if (hasRooms) {
         // If there are associated rooms, disable the RoomType instead
-            roomType.setDisabled(true);
+            roomType.setIsDisabled(true);
             em.merge(roomType);
         } else {
         // Otherwise, delete it

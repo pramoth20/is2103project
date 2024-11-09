@@ -5,11 +5,16 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -33,10 +38,26 @@ public class Partner implements Serializable {
     @Column(nullable = false, length = 15)
     private String phoneNumber;
     
+    //bidirectional relationshup to reservation
+    @OneToMany
+    @JoinColumn(name = "partner_id")
+    private List<Reservation> reservations;
+    
+    //unidirectional relation to reservation
+//    @OneToMany
+//    @JoinTable(
+//        name = "partner_reservation", // Name of the join table
+//        joinColumns = @JoinColumn(name = "partner_id"), // Foreign key to Partner
+//        inverseJoinColumns = @JoinColumn(name = "reservation_id") // Foreign key to Reservation
+//    )
+//    private List<Reservation> reservations;
+    
     public Partner() {
+        reservations = new ArrayList<>();
     }
 
     public Partner(String companyName, String email, String phoneNumber) {
+        this();
         this.companyName = companyName;
         this.email = email;
         this.phoneNumber = phoneNumber;
@@ -73,6 +94,20 @@ public class Partner implements Serializable {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+    
+    /**
+     * @return the reservations
+     */
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    /**
+     * @param reservations the reservations to set
+     */
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
     }
 
     @Override

@@ -8,6 +8,8 @@ import enums.EmployeeRole;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -30,7 +32,7 @@ public class Employee implements Serializable {
     @Column(nullable = false, length = 25)
     private String password;
     
-//    @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
     private EmployeeRole position;
     
     private boolean loggedIn;

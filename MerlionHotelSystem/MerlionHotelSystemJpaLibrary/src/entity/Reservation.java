@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,6 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -25,9 +28,6 @@ import javax.persistence.TemporalType;
 @Entity
 public class Reservation implements Serializable {
 
-    /**
-     * @return the roomNumber
-     */
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -46,26 +46,39 @@ public class Reservation implements Serializable {
         joinColumns = @JoinColumn(name = "reservation_id"),
         inverseJoinColumns = @JoinColumn(name = "rate_id")
     )
-    private List<Rate> rates = new ArrayList<>();
+    private List<Rate> rates;
     
-    //Just added -> haven't put the constructor yet
-    private String partnerReferenceNumber;
+    
+    //bidirectional reference to customer
+    @ManyToOne
+    private Customer customer;
+
+//    unidirectionsal reference to reservation rooms
+//    @OneToMany
+//    @JoinColumn(nullable = false, name = "reservation_id")
+//    private List<ReservationRoom> reservationRooms;
    
+    //unidirectionsal reference to reservation rooms
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+        name = "reservation_reservation_room", // Join table name
+        joinColumns = @JoinColumn(name = "reservation_id"), // Foreign key to Reservation
+        inverseJoinColumns = @JoinColumn(name = "reservation_room_id") // Foreign key to ReservationRoom
+    )
+    private List<ReservationRoom> reservationRooms;
 
     public Reservation() {
+        rates = new ArrayList<>();
+        reservationRooms = new ArrayList<>();
     }
 
-    public Reservation(String roomNumber, boolean status) {
-        this.roomNumber = roomNumber;
-        this.isAllocated = status;
-     
-    }
 
-    public Reservation(String roomNumber, boolean isAllocated, Date reservationDate, String partnerReferenceNumber) {
+    public Reservation(String roomNumber, boolean isAllocated, Date reservationDate, Customer customer) {
+        this();
         this.roomNumber = roomNumber;
         this.isAllocated = isAllocated;
         this.reservationDate = reservationDate;
-        this.partnerReferenceNumber = partnerReferenceNumber;
+        this.customer = customer;
     }
     
     
@@ -103,11 +116,64 @@ public class Reservation implements Serializable {
     public void setIsAllocated(boolean isAllocated) {
         this.isAllocated = isAllocated;
     }
+    
+    
+    /**
+     * @return the reservationDate
+     */
+    public Date getReservationDate() {
+        return reservationDate;
+    }
 
     /**
-     * @return the roomType
+     * @param reservationDate the reservationDate to set
      */
-  
+    public void setReservationDate(Date reservationDate) {
+        this.reservationDate = reservationDate;
+    }
+
+    /**
+     * @return the rates
+     */
+    public List<Rate> getRates() {
+        return rates;
+    }
+
+    /**
+     * @param rates the rates to set
+     */
+    public void setRates(List<Rate> rates) {
+        this.rates = rates;
+    }
+
+    /**
+     * @return the customer
+     */
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    /**
+     * @param customer the customer to set
+     */
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    /**
+     * @return the reservationRooms
+     */
+    public List<ReservationRoom> getReservationRooms() {
+        return reservationRooms;
+    }
+
+    /**
+     * @param reservationRooms the reservationRooms to set
+     */
+    public void setReservationRooms(List<ReservationRoom> reservationRooms) {
+        this.reservationRooms = reservationRooms;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;

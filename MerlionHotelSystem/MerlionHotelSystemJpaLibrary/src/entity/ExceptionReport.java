@@ -38,9 +38,10 @@ public class ExceptionReport implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date resolvedDate;
     
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "reservation_room_id",nullable = false)
-    private ReservationRoom reservationRoom;
+//    @ManyToOne(optional = false)
+//    @JoinColumn(name = "reservation_room_id",nullable = false)
+//    private ReservationRoom reservationRoom;
+
     
     @Column(nullable = false)
     private String exceptionType;
@@ -48,11 +49,10 @@ public class ExceptionReport implements Serializable {
     public ExceptionReport() {
     }
 
-    public ExceptionReport(Date reportDate, Boolean isResolved, Date resolvedDate, ReservationRoom reservationRoom, String exceptionType) {
+    public ExceptionReport(Date reportDate, Boolean isResolved, Date resolvedDate,String exceptionType) {
         this.reportDate = reportDate;
         this.isResolved = isResolved;
         this.resolvedDate = resolvedDate;
-        this.reservationRoom = reservationRoom;
         this.exceptionType = exceptionType;
     }
     

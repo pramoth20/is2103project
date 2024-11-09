@@ -5,6 +5,7 @@
 package ejb.session.stateless;
 
 import entity.Reservation;
+import entity.ReservationRoom;
 import entity.RoomType;
 import java.util.Date;
 import java.util.List;

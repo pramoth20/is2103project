@@ -5,12 +5,18 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -25,20 +31,33 @@ public class ReservationRoom implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationRoomId;
     
-    @ManyToOne(optional = false)
-    private Reservation reservation;
+//    @ManyToOne(optional = false)
+//    private Reservation reservation;
     
+    //unidirectional relationship with room
     @ManyToOne(optional = false)
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+    
     
     @Column(nullable = false)
     private int numberOfNights;
     
+    @OneToMany(cascade = {/*CascadeType.PERSIST, */CascadeType.REMOVE}, orphanRemoval = true)
+    @JoinTable(
+        name = "reservationroom_exceptionreport", // Join table name
+        joinColumns = @JoinColumn(name = "reservation_room_id"), // FK column in join table referring to ReservationRoom
+        inverseJoinColumns = @JoinColumn(name = "exception_report_id") // FK column in join table referring to ExceptionReport
+    )
+    private List<ExceptionReport> exceptionReports;
+    
+    
     public ReservationRoom() {
+        exceptionReports = new ArrayList<>();
     }
 
-    public ReservationRoom(Reservation reservation, Room room, int numberOfNights) {
-        this.reservation = reservation;
+    public ReservationRoom(Room room, int numberOfNights) {
+        this();
         this.room = room;
         this.numberOfNights = numberOfNights;
     }
@@ -50,14 +69,6 @@ public class ReservationRoom implements Serializable {
 
     public void setReservationRoomId(Long reservationRoomId) {
         this.reservationRoomId = reservationRoomId;
-    }
-
-    public Reservation getReservation() {
-        return reservation;
-    }
-
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
     }
 
     public Room getRoom() {
@@ -75,6 +86,22 @@ public class ReservationRoom implements Serializable {
     public void setNumberOfNights(int numberOfNights) {
         this.numberOfNights = numberOfNights;
     }
+    
+    
+    /**
+     * @return the exceptionReports
+     */
+    public List<ExceptionReport> getExceptionReports() {
+        return exceptionReports;
+    }
+
+    /**
+     * @param exceptionReports the exceptionReports to set
+     */
+    public void setExceptionReports(List<ExceptionReport> exceptionReports) {
+        this.exceptionReports = exceptionReports;
+    }
+    
 
     @Override
     public int hashCode() {
@@ -100,5 +127,5 @@ public class ReservationRoom implements Serializable {
     public String toString() {
         return "entity.ReservationRoom[ id=" + reservationRoomId + " ]";
     }
-    
+
 }

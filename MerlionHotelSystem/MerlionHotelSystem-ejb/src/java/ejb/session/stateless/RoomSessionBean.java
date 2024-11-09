@@ -18,6 +18,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     private EntityManager em;
 
     // Use Case 12: Create New Room
+    // shld be a conditional for roomtype check
     @Override
     public Long createRoom(Room room) {
         em.persist(room);
@@ -26,6 +27,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
 
     // Use Case 13: Update Room
+    //idk if it shld be a query
     @Override
     public void updateRoom(Room room) {
         em.merge(room); 

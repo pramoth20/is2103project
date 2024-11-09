@@ -5,6 +5,7 @@
 package ejb.session.stateless;
 
 import entity.ExceptionReport;
+import entity.ReservationRoom;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;

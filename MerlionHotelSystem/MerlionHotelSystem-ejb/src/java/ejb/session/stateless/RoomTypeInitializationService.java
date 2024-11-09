@@ -12,6 +12,8 @@ import javax.persistence.PersistenceContext;
 /**
  *
  * @author jwong
+ * 
+ * this session bean is to set the upgrade of the consequent session bean
  */
 @Stateless
 public class RoomTypeInitializationService implements RoomTypeInitializationServiceLocal {

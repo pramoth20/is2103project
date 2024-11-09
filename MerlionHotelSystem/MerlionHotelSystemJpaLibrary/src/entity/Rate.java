@@ -18,6 +18,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
@@ -30,11 +31,12 @@ import javax.persistence.TemporalType;
 @Entity
 public class Rate implements Serializable {
 
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
-    
+
     @Column(nullable = false, unique = true, length = 64)
     private String name;
 
@@ -52,12 +54,20 @@ public class Rate implements Serializable {
     private Date startDate;  // Validity period start (for peak/promotion rates)
 
     @Temporal(TemporalType.DATE)
-    private Date endDate; 
-    
+    private Date endDate;
+
     @Column(nullable = false)
     private boolean isDisabled = false;
     
-    @ManyToMany(mappedBy = "rates")
+    @Column(nullable = false)
+    private Boolean isAvailable = true;
+
+    @ManyToMany
+    @JoinTable(
+        name = "reservation_rate", // The join table name
+        joinColumns = @JoinColumn(name = "rate_id"), // Foreign key for the rate entity
+        inverseJoinColumns = @JoinColumn(name = "reservation_id") // Foreign key for the reservation entity
+    )
     private List<Reservation> reservations = new ArrayList<>();
 
     public Rate() {
@@ -71,8 +81,18 @@ public class Rate implements Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
     }
-    
-   
+
+    // Method to check if the rate can be deleted
+    public boolean canBeDeleted() {
+        return reservations.isEmpty();
+    }
+
+    // Mark rate as disabled
+    public void disableRate() {
+        this.isDisabled = true;
+    }
+
+    // Getters and Setters
     public Long getRateId() {
         return rateId;
     }
@@ -106,116 +126,88 @@ public class Rate implements Serializable {
         return "entity.Rate[ id=" + rateId + " ]";
     }
 
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @param name the name to set
-     */
     public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @return the roomType
-     */
     public RoomType getRoomType() {
         return roomType;
     }
 
-    /**
-     * @param roomType the roomType to set
-     */
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
     }
 
-    /**
-     * @return the rateType
-     */
     public RateType getRateType() {
         return rateType;
     }
 
-    /**
-     * @param rateType the rateType to set
-     */
     public void setRateType(RateType rateType) {
         this.rateType = rateType;
     }
 
-    /**
-     * @return the ratePerNight
-     */
     public BigDecimal getRatePerNight() {
         return ratePerNight;
     }
 
-    /**
-     * @param ratePerNight the ratePerNight to set
-     */
     public void setRatePerNight(BigDecimal ratePerNight) {
         this.ratePerNight = ratePerNight;
     }
 
-    /**
-     * @return the startDate
-     */
     public Date getStartDate() {
         return startDate;
     }
 
-    /**
-     * @param startDate the startDate to set
-     */
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    /**
-     * @return the endDate
-     */
     public Date getEndDate() {
         return endDate;
     }
 
-    /**
-     * @param endDate the endDate to set
-     */
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 
-    /**
-     * @return the isDisabled
-     */
-    public boolean isIsDisabled() {
+    public boolean getIsDisabled() {
         return isDisabled;
     }
 
-    /**
-     * @param isDisabled the isDisabled to set
-     */
-    public void setIsDisabled(boolean isDisabled) {
-        this.isDisabled = isDisabled;
+    public void setIsDisabled(boolean disabled) {
+        this.isDisabled = disabled;
+        if (disabled) {
+            isAvailable = false; // If the room is disabled, it cannot be available
+        }
     }
 
-    /**
-     * @return the reservations
-     */
     public List<Reservation> getReservations() {
         return reservations;
     }
 
-    /**
-     * @param reservations the reservations to set
-     */
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
     }
     
+    /**
+     * @return the isAvailable
+     */
+    public Boolean getIsAvailable() {
+        return isAvailable;
+    }
+
+    /**
+     * @param isAvailable the isAvailable to set
+     */
+    public void setIsAvailable(boolean available) {
+        if (!isDisabled) {
+            this.isAvailable = available;
+        } else {
+            this.isAvailable = false; // Ensures that a disabled room cannot be set as available
+        }
+    }
 }

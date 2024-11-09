@@ -45,21 +45,21 @@ public class RoomType implements Serializable {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Rate> roomRate;
     
-    @OneToMany(mappedBy = "roomType")
-    private List<Room> rooms;
+//    @OneToMany(mappedBy = "roomType")
+//    private List<Room> rooms;
+    
+    //mark as isDisabled if the room is sitll in use, USE CASE 10
+    @Column(nullable = false)
+    private Boolean isDisabled = false;
     
     @Column(nullable = false)
-    private Boolean disabled = false;
+    private Boolean isAvailable = true;
     
     public RoomType() {
         roomRate = new ArrayList<>();
         //rooms = new ArrayList<>();
     }
 
-    public RoomType(String name) {
-        this();
-        this.name = name;
-    }
 
     public String getName() {
         return name;
@@ -146,31 +146,38 @@ public class RoomType implements Serializable {
     }
 
     /**
-     * @return the rooms
+     * @return the isDisabled
      */
-    public List<Room> getRooms() {
-        return rooms;
+    public Boolean getIsDisabled() {
+        return isDisabled;
     }
 
     /**
-     * @param rooms the rooms to set
+     * @param isDisabled the isDisabled to set
      */
-    public void setRooms(List<Room> rooms) {
-        this.rooms = rooms;
+    public void setIsDisabled(boolean disabled) {
+        this.isDisabled = disabled;
+        if (disabled) {
+            isAvailable = false; // If the room is disabled, it cannot be available
+        }
     }
 
     /**
-     * @return the disabled
+     * @return the isAvailable
      */
-    public Boolean getDisabled() {
-        return disabled;
+    public Boolean getIsAvailable() {
+        return isAvailable;
     }
 
     /**
-     * @param disabled the disabled to set
+     * @param isAvailable the isAvailable to set
      */
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
+    public void setIsAvailable(boolean available) {
+        if (!isDisabled) {
+            this.isAvailable = available;
+        } else {
+            this.isAvailable = false; // Ensures that a disabled room cannot be set as available
+        }
     }
     
 }

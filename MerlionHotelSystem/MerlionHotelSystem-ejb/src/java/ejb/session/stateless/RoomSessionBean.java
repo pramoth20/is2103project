@@ -23,7 +23,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     public Long createRoom(Room room) {
         em.persist(room);
         em.flush();
-        return room.getId();
+        return room.getRoomId();
     }
 
     // Use Case 13: Update Room

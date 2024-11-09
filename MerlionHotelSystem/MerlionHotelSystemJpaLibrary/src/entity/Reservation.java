@@ -60,6 +60,13 @@ public class Reservation implements Serializable {
         this.isAllocated = status;
      
     }
+
+    public Reservation(String roomNumber, boolean isAllocated, Date reservationDate, String partnerReferenceNumber) {
+        this.roomNumber = roomNumber;
+        this.isAllocated = isAllocated;
+        this.reservationDate = reservationDate;
+        this.partnerReferenceNumber = partnerReferenceNumber;
+    }
     
     
     

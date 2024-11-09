@@ -9,9 +9,9 @@ package enums;
  * @author jwong
  */
 public enum EmployeeRole {
-     MANAGER,
-    FRONT_DESK,
-    HOUSEKEEPING,
-    ADMINISTRATOR
+    SYSTEM_ADMINISTRATOR,
+    OPERATION_MANAGER,
+    SALES_MANAGER,
+    GUEST_RELATION_OFFICER,
     
 }

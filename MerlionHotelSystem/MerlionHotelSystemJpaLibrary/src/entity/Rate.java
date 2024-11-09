@@ -11,6 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -31,6 +33,10 @@ public class Rate implements Serializable {
     private Date endDate;
     
     private BigDecimal ratePerNight; //Rate per night -> planning to use enum
+    
+    @ManyToOne
+@JoinColumn(name = "room_type_id")
+private RoomType roomType;
     
 
     public Long getRateId() {

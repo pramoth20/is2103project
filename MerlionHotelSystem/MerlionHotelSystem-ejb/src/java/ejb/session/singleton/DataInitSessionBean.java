@@ -6,6 +6,7 @@ package ejb.session.singleton;
 
 import ejb.session.stateless.EmployeeSessionBeanLocal;
 import entity.Employee;
+import enums.EmployeeRole;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
@@ -36,13 +37,13 @@ public class DataInitSessionBean {
     @PostConstruct
     public void postConstruct() {
         if(em.find(Employee.class, 1l) == null) {
-            employeeSessionBeanLocal.createEmployee(new Employee("John Doe", "password123", "Manager"));
-            employeeSessionBeanLocal.createEmployee(new Employee("Jane Smith", "password456", "Receptionist"));
-            employeeSessionBeanLocal.createEmployee(new Employee("Michael Johnson", "password789", "Housekeeping"));
-            employeeSessionBeanLocal.createEmployee(new Employee("Emily Davis", "password321", "Chef"));
-            employeeSessionBeanLocal.createEmployee(new Employee("William Brown", "password654", "Security"));
+            employeeSessionBeanLocal.createEmployee("John Doe", "password123", EmployeeRole.SYSTEM_ADMINISTRATOR);
+            employeeSessionBeanLocal.createEmployee("Jane Smith", "password456", EmployeeRole.SYSTEM_ADMINISTRATOR);
+            employeeSessionBeanLocal.createEmployee("Michael Johnson", "password789", EmployeeRole.OPERATION_MANAGER);
+            employeeSessionBeanLocal.createEmployee("Emily Davis", "password321", EmployeeRole.SALES_MANAGER);
+            employeeSessionBeanLocal.createEmployee("William Brown", "password654", EmployeeRole.GUEST_RELATION_OFFICER);
         }
-    }//not too sure
+    }
 }
 
     // Add business logic below. (Right-click in editor and choose

@@ -11,6 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.Date;
 import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -24,16 +28,35 @@ public class ExceptionReport implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reportId;
     
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date reportDate;
     
     @Column(nullable = false)
     private Boolean isResolved;
     
+    @Temporal(TemporalType.TIMESTAMP)
     private Date resolvedDate;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "reservation_room_id",nullable = false)
+    private ReservationRoom reservationRoom;
+    
+    @Column(nullable = false)
+    private String exceptionType;
 
     public ExceptionReport() {
     }
 
+    public ExceptionReport(Date reportDate, Boolean isResolved, Date resolvedDate, ReservationRoom reservationRoom, String exceptionType) {
+        this.reportDate = reportDate;
+        this.isResolved = isResolved;
+        this.resolvedDate = resolvedDate;
+        this.reservationRoom = reservationRoom;
+        this.exceptionType = exceptionType;
+    }
+    
+    
     
     public Long getReportId() {
         return reportId;
@@ -66,6 +89,62 @@ public class ExceptionReport implements Serializable {
     @Override
     public String toString() {
         return "entity.ExceptionReport[ id=" + reportId + " ]";
+    }
+
+    /**
+     * @return the reportDate
+     */
+    public Date getReportDate() {
+        return reportDate;
+    }
+
+    /**
+     * @param reportDate the reportDate to set
+     */
+    public void setReportDate(Date reportDate) {
+        this.reportDate = reportDate;
+    }
+
+    /**
+     * @return the isResolved
+     */
+    public Boolean getIsResolved() {
+        return isResolved;
+    }
+
+    /**
+     * @param isResolved the isResolved to set
+     */
+    public void setIsResolved(Boolean isResolved) {
+        this.isResolved = isResolved;
+    }
+
+    /**
+     * @return the resolvedDate
+     */
+    public Date getResolvedDate() {
+        return resolvedDate;
+    }
+
+    /**
+     * @param resolvedDate the resolvedDate to set
+     */
+    public void setResolvedDate(Date resolvedDate) {
+        this.resolvedDate = resolvedDate;
+    }
+
+    /**
+     * @return the exceptionType
+     */
+    public String getExceptionType() {
+        return exceptionType;
+    }
+
+    /**
+     * @param exceptionType the exceptionType to set
+     */
+    public void setExceptionType(String exceptionType) {
+        this.exceptionType = exceptionType;
     }
     
 }

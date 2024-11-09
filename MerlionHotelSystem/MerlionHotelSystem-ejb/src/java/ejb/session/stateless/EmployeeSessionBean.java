@@ -126,6 +126,8 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
             throw new IllegalStateException("Employee is not logged in!");
         }
     }
+    
+    
         
     
     

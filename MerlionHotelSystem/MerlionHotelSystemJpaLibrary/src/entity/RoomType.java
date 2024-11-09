@@ -5,6 +5,7 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,7 +13,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -26,16 +29,45 @@ public class RoomType implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
     
-    @Column(nullable = false)
-    private Integer roomRank; //for upgrading the rooms(1 for Deluxe, etc)
+    @JoinColumn(nullable = false, unique = true)
+    private String name;//name or a roomType
+            
+    @OneToOne
+    @JoinColumn(name = "next_room_type_id")
+    private RoomType nextRoomType;
     
-    @Column(nullable = false)
+    @Column(length = 225)
+    private String details;
+    
+    /*@Column(nullable = false)
     private Boolean canChange; //facilitate the changing of the rooms
-    
-    
-    
+    */
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Rate> roomRate;
+    
+    @OneToMany(mappedBy = "roomType")
+    private List<Room> rooms;
+    
+    @Column(nullable = false)
+    private Boolean disabled = false;
+    
+    public RoomType() {
+        roomRate = new ArrayList<>();
+        //rooms = new ArrayList<>();
+    }
+
+    public RoomType(String name) {
+        this();
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Long getRoomTypeId() {
         return roomTypeId;
@@ -68,6 +100,77 @@ public class RoomType implements Serializable {
     @Override
     public String toString() {
         return "entity.RoomType[ id=" + roomTypeId + " ]";
+    }
+
+
+    /**
+     * @return the details
+     */
+    public String getDetails() {
+        return details;
+    }
+
+    /**
+     * @param details the details to set
+     */
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    /**
+     * @return the roomRate
+     */
+    public List<Rate> getRoomRate() {
+        return roomRate;
+    }
+
+    /**
+     * @param roomRate the roomRate to set
+     */
+    public void setRoomRate(List<Rate> roomRate) {
+        this.roomRate = roomRate;
+    }
+
+    /**
+     * @return the nextRoomType
+     */
+    public RoomType getNextRoomType() {
+        return nextRoomType;
+    }
+
+    /**
+     * @param nextRoomType the nextRoomType to set
+     */
+    public void setNextRoomType(RoomType nextRoomType) {
+        this.nextRoomType = nextRoomType;
+    }
+
+    /**
+     * @return the rooms
+     */
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    /**
+     * @param rooms the rooms to set
+     */
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
+
+    /**
+     * @return the disabled
+     */
+    public Boolean getDisabled() {
+        return disabled;
+    }
+
+    /**
+     * @param disabled the disabled to set
+     */
+    public void setDisabled(Boolean disabled) {
+        this.disabled = disabled;
     }
     
 }

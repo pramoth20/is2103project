@@ -4,15 +4,24 @@
  */
 package entity;
 
+import enums.RateType;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -26,19 +35,44 @@ public class Rate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
     
-//    private RateType rateType;
-    
-    private Date startDate;
-    
-    private Date endDate;
-    
-    private BigDecimal ratePerNight; //Rate per night -> planning to use enum
-    
-    @ManyToOne
-@JoinColumn(name = "room_type_id")
-private RoomType roomType;
-    
+    @Column(nullable = false, unique = true, length = 64)
+    private String name;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
+    private RoomType roomType;  // Association with RoomType entity
+
+    @Enumerated(EnumType.STRING)
+    private RateType rateType;  // Published, Normal, Peak, Promotion
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal ratePerNight;
+
+    @Temporal(TemporalType.DATE)
+    private Date startDate;  // Validity period start (for peak/promotion rates)
+
+    @Temporal(TemporalType.DATE)
+    private Date endDate; 
+    
+    @Column(nullable = false)
+    private boolean isDisabled = false;
+    
+    @ManyToMany(mappedBy = "rates")
+    private List<Reservation> reservations = new ArrayList<>();
+
+    public Rate() {
+    }
+
+    public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
+        this.name = name;
+        this.roomType = roomType;
+        this.rateType = rateType;
+        this.ratePerNight = ratePerNight;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+    
+   
     public Long getRateId() {
         return rateId;
     }
@@ -70,6 +104,118 @@ private RoomType roomType;
     @Override
     public String toString() {
         return "entity.Rate[ id=" + rateId + " ]";
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the roomType
+     */
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    /**
+     * @param roomType the roomType to set
+     */
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
+
+    /**
+     * @return the rateType
+     */
+    public RateType getRateType() {
+        return rateType;
+    }
+
+    /**
+     * @param rateType the rateType to set
+     */
+    public void setRateType(RateType rateType) {
+        this.rateType = rateType;
+    }
+
+    /**
+     * @return the ratePerNight
+     */
+    public BigDecimal getRatePerNight() {
+        return ratePerNight;
+    }
+
+    /**
+     * @param ratePerNight the ratePerNight to set
+     */
+    public void setRatePerNight(BigDecimal ratePerNight) {
+        this.ratePerNight = ratePerNight;
+    }
+
+    /**
+     * @return the startDate
+     */
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    /**
+     * @param startDate the startDate to set
+     */
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    /**
+     * @return the endDate
+     */
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    /**
+     * @param endDate the endDate to set
+     */
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    /**
+     * @return the isDisabled
+     */
+    public boolean isIsDisabled() {
+        return isDisabled;
+    }
+
+    /**
+     * @param isDisabled the isDisabled to set
+     */
+    public void setIsDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
+    }
+
+    /**
+     * @return the reservations
+     */
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    /**
+     * @param reservations the reservations to set
+     */
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
     }
     
 }

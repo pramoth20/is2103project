@@ -29,6 +29,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
        
+    //create room rate
     public Rate createEmployee(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
         Rate roomRate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
         em.persist(roomRate);

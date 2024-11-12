@@ -12,6 +12,7 @@ import javax.persistence.PersistenceContext;
 /**
  *
  * @author jwong
+ * is this gonna be just the same as a data init session bean that initializes all the room types
  */
 @Stateless
 public class RoomTypeInitializationService implements RoomTypeInitializationServiceLocal {

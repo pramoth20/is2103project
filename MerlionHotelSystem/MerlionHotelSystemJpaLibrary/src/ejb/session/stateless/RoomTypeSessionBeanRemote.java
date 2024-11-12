@@ -15,8 +15,9 @@ import util.exception.RoomTypeNotFoundException;
  */
 @Remote
 public interface RoomTypeSessionBeanRemote {
+    
+    public RoomType createRoomType(String name, String details);
     public RoomType getRoomTypeDetails(Long roomTypeId) throws RoomTypeNotFoundException;
-    public RoomType createRoomType(String name,  String details);
     public RoomType updateRoomType(Long roomTypeId, String name, String details) throws RoomTypeNotFoundException;
     public void deleteRoomType(Long roomTypeId) throws RoomTypeNotFoundException;
     public List<RoomType> retrieveAllRoomTypes();

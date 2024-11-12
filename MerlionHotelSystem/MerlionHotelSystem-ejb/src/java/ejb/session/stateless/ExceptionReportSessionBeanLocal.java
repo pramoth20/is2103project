@@ -4,6 +4,8 @@
  */
 package ejb.session.stateless;
 
+import entity.ExceptionReport;
+import java.util.List;
 import javax.ejb.Local;
 
 /**
@@ -12,5 +14,13 @@ import javax.ejb.Local;
  */
 @Local
 public interface ExceptionReportSessionBeanLocal {
+
+    public List<ExceptionReport> getTodayUpgradeAvailableExceptions();
+
+    public List<ExceptionReport> getTodayNoUpgradeAvailableExceptions();
+
+    public void displayRoomAllocationExceptionReport();
+
+   
     
 }

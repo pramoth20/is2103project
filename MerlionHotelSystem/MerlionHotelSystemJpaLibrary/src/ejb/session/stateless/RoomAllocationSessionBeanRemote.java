@@ -4,8 +4,11 @@
  */
 package ejb.session.stateless;
 
+import entity.RoomType;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.Remote;
+import util.exception.RoomAllocationException;
 
 /**
  *
@@ -13,5 +16,8 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoomAllocationSessionBeanRemote {
-    public void allocateRoom(Date date);
+    public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms);
+    
+    public void allocateRoomReservationsToday() throws RoomAllocationException;
+    
 }

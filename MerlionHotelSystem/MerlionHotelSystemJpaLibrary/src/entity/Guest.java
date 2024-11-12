@@ -17,26 +17,20 @@ public class Guest extends Customer implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    @Column(nullable = false, length = 20)
-    protected String guestId;
-    
+    @Column(nullable = false, length = 32)
+    private String password;
+        
     public Guest() {
         super();
     }
 
-    public Guest(String email, String firstName, String lastName, String phoneNumber, String identificationNumber) {
+    public Guest(String email, String firstName, String lastName, String phoneNumber, String password) {
         super(email, firstName, lastName, phoneNumber);
-        this.guestId = identificationNumber;
+        this.password = password;
+        
     }
 
-    // Getters and Setters
-    public String getGuestId() {
-        return guestId;
-    }
-
-    public void setGuestId(String guestId) {
-        this.guestId = guestId;
-    }
+   
 
     @Override
     public int hashCode() {
@@ -61,6 +55,20 @@ public class Guest extends Customer implements Serializable {
     @Override
     public String toString() {
         return "entity.Guest[ id=" + getCustomerId() + " ]";
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
     
 }

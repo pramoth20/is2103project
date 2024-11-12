@@ -38,6 +38,9 @@ public class Partner implements Serializable {
     @Column(nullable = false, length = 15)
     private String phoneNumber;
     
+    @Column(nullable = false, length = 25)
+    private String password;
+    
     //bidirectional relationshup to reservation
     @OneToMany
     @JoinColumn(name = "partner_id")
@@ -56,11 +59,12 @@ public class Partner implements Serializable {
         reservations = new ArrayList<>();
     }
 
-    public Partner(String companyName, String email, String phoneNumber) {
+    public Partner(String companyName, String email, String phoneNumber, String password) {
         this();
         this.companyName = companyName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 
     // Getters and Setters
@@ -133,6 +137,20 @@ public class Partner implements Serializable {
     @Override
     public String toString() {
         return "entity.Partner[ id=" + partnerId + " ]";
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
     
 }

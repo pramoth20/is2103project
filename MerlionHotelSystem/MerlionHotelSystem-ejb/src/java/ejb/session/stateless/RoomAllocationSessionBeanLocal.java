@@ -4,8 +4,12 @@
  */
 package ejb.session.stateless;
 
+
+import entity.RoomType;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.Local;
+import util.exception.RoomAllocationException;
 
 /**
  *
@@ -14,6 +18,10 @@ import javax.ejb.Local;
 @Local
 public interface RoomAllocationSessionBeanLocal {
 
-    public void allocateRoom(Date date);
+
+    public void allocateRoomReservationsToday() throws RoomAllocationException;
+
+    public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms);
+
     
 }

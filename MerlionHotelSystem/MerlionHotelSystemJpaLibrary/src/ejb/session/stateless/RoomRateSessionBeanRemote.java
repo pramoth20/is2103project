@@ -6,12 +6,16 @@ package ejb.session.stateless;
 
 import entity.Rate;
 import entity.RoomType;
-enums.RateType;
+import enums.RateType;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
+import util.exception.InputDataValidationException;
+import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
+import util.exception.UpdateRoomRateException;
+
 
 /**
  *
@@ -19,11 +23,18 @@ import util.exception.RoomRateNotFoundException;
  */
 @Remote
 public interface RoomRateSessionBeanRemote {
+    public Rate createRate(Rate rate);
     
-    public Rate createRoomRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate);
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException;
-    public Rate updateRoomRateDetails(Long rateId, String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) throws RoomRateNotFoundException;
+    
     public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException;
+    
     public List<Rate> retrieveAllRoomRates();
-    public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException;
+    
+    public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException;
+    
+    public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException;
+    
+    public BigDecimal getWalkInRate(RoomType roomType) throws RoomRateNotFoundException;
+
 }

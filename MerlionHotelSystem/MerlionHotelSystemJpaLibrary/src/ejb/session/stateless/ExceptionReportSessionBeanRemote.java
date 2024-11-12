@@ -4,6 +4,8 @@
  */
 package ejb.session.stateless;
 
+import entity.ExceptionReport;
+import java.util.List;
 import javax.ejb.Remote;
 
 /**
@@ -13,4 +15,9 @@ import javax.ejb.Remote;
 @Remote
 public interface ExceptionReportSessionBeanRemote {
     
+    public List<ExceptionReport> getTodayUpgradeAvailableExceptions();
+    
+    public List<ExceptionReport> getTodayNoUpgradeAvailableExceptions();
+    
+    public void displayRoomAllocationExceptionReport();
 }

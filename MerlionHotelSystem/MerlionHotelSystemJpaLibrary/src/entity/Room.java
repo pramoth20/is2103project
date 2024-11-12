@@ -102,6 +102,8 @@ public class Room implements Serializable {
     public String getRoomNumber() {
         return roomNumber;
     }
+    
+    
 
     /**
      * @param roomNumber the roomNumber to set
@@ -163,7 +165,7 @@ public class Room implements Serializable {
     @PrePersist
     @PreUpdate
     private void generateRoomNumber() {
-        this.roomNumber = String.format("%02d%02d", floorNumber, sequenceNumber);
+        this.roomNumber = String.format("%02d%02d", getFloorNumber(), getSequenceNumber());
     }
 
     @Override
@@ -189,6 +191,34 @@ public class Room implements Serializable {
     @Override
     public String toString() {
         return "entity.Room[ id=" + roomId + " ]";
+    }
+
+    /**
+     * @return the floorNumber
+     */
+    public Integer getFloorNumber() {
+        return floorNumber;
+    }
+
+    /**
+     * @param floorNumber the floorNumber to set
+     */
+    public void setFloorNumber(Integer floorNumber) {
+        this.floorNumber = floorNumber;
+    }
+
+    /**
+     * @return the sequenceNumber
+     */
+    public Integer getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    /**
+     * @param sequenceNumber the sequenceNumber to set
+     */
+    public void setSequenceNumber(Integer sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
     }
     
 }

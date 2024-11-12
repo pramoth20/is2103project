@@ -22,14 +22,16 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-   public RoomType createRoomType(String name) {
-       RoomType roomType = new RoomType(name);
+   @Override
+   public RoomType createRoomType(String name, String details) {
+       RoomType roomType = new RoomType(name, details);
        em.persist(roomType);
         em.flush();
         return roomType;
    } 
    
    //View Room Type Details
+    @Override
    public RoomType getRoomTypeDetails(Long roomTypeId) throws RoomTypeNotFoundException {
        RoomType roomType = em.find(RoomType.class, roomTypeId);
        if (roomType == null) {
@@ -38,7 +40,18 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
        return roomType;
    }
    
+   public RoomType getRoomTypeDetailsByName(String roomTypeName) throws RoomTypeNotFoundException {
+        try {
+            Query query = em.createQuery("SELECT r FROM RoomType r WHERE r.name = :name");
+            query.setParameter("name", roomTypeName);
+            return (RoomType) query.getSingleResult();
+        } catch (NoResultException ex) {
+            throw new RoomTypeNotFoundException("Room type with name " + roomTypeName + " cannot be found.");
+        }
+}
+   
    //Update Room Type
+    @Override
    public RoomType updateRoomType(Long roomTypeId, String name, String details) throws RoomTypeNotFoundException {
        RoomType roomType = em.find(RoomType.class, roomTypeId);
        if (roomType == null) {
@@ -56,6 +69,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
    }
    
    //Delete Room Type -> shd I be searching the database yes right 
+    @Override
    public void deleteRoomType(Long roomTypeId) throws RoomTypeNotFoundException {
        RoomType roomType = em.find(RoomType.class, roomTypeId);
        if (roomType == null) {
@@ -77,6 +91,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
    }
    
     //Display a list of all room type records in the system
+    @Override
     public List<RoomType> retrieveAllRoomTypes() {
     Query query = em.createQuery("SELECT r FROM RoomType r");
     return query.getResultList();

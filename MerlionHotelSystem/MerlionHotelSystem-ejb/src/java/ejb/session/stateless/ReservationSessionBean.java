@@ -27,19 +27,35 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         em.persist(object);
     }*/
 
+    @Override
     public Long createNewReservation(Reservation reservation) {
         em.persist(reservation);
         em.flush();
         return reservation.getReservationId();
     }
             
+    @Override
     public void registerReservation(String roomNumber, boolean status, RoomType roomType) {
         Reservation reservation = new Reservation(roomNumber, status, roomType);
         em.persist(reservation);
     }
 
+    @Override
     public Reservation findReservation(Long reservationId) {
         return em.find(Reservation.class, reservationId);
+    }
+    
+    @Override
+    public void updateReservation(Reservation reservation) {
+        // Find the existing reservation to ensure it is present
+        Reservation existingReservation = em.find(Reservation.class, reservation.getReservationId());
+
+        if (existingReservation != null) {
+            // Use the EntityManager's merge method to update the reservation
+            em.merge(reservation);
+        } else {
+            throw new IllegalArgumentException("Reservation with ID " + reservation.getReservationId() + " does not exist.");
+        }
     }
     
 }

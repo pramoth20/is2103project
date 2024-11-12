@@ -10,11 +10,19 @@ import enums.RateType;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import util.exception.InputDataValidationException;
+import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
+import util.exception.UpdateRoomRateException;
 
 /**
  *
@@ -26,17 +34,30 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
        
-    public Rate createEmployee(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
+
+    /*public Rate createRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
         Rate roomRate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
         em.persist(roomRate);
         em.flush();
         return roomRate;
-    }  
+    }  */
+    
+    public RoomRateSessionBean() {
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
+    
+    public Rate createRate(Rate rate) {
+    em.persist(rate);
+    em.flush();  // Ensure the rate is persisted and the ID is generated
+    return rate;
+}
     
     //View Room Details
+    @Override
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException {
        Rate roomRate = em.find(Rate.class, rateId);
        if (roomRate == null) {
@@ -45,34 +66,60 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
        return roomRate;
     }
     
-    public Rate updateRoomRateDetails(Long rateId, String name, RoomType roomType, RateType rateType,BigDecimal ratePerNight, Date startDate, Date endDate ) throws RoomRateNotFoundException {
-        Rate rate = em.find(Rate.class, rateId);
-    if (rate == null) {
-        throw new RoomRateNotFoundException("Rate ID " + rateId + " not found.");
+    public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException {
+        // Step 1: Basic validation to ensure `updatedRate` and its ID are present
+        if (updatedRate != null && updatedRate.getRateId() != null) {
+            // Step 2: Perform validation using the Validator
+            Set<ConstraintViolation<Rate>> constraintViolations = validator.validate(updatedRate);
+            
+            if (constraintViolations.isEmpty()) {
+                // Step 3: Retrieve existing rate entity from the database
+                Rate rateToUpdate = em.find(Rate.class, updatedRate.getRateId());
+                if (rateToUpdate == null) {
+                    throw new RoomRateNotFoundException("Rate with ID " + updatedRate.getRateId() + " not found.");
+                }
+                
+                if (!rateToUpdate.getRoomType().equals(updatedRate.getRoomType())) {
+                throw new UpdateRoomRateException("Room type cannot be changed for an existing rate.");
+            }
+
+                // Step 4: Update the existing fields with values from updatedRate
+                rateToUpdate.setName(updatedRate.getName());
+                rateToUpdate.setRoomType(updatedRate.getRoomType());
+                rateToUpdate.setRateType(updatedRate.getRateType());
+                rateToUpdate.setRatePerNight(updatedRate.getRatePerNight());
+                rateToUpdate.setStartDate(updatedRate.getStartDate());
+                rateToUpdate.setEndDate(updatedRate.getEndDate());
+                rateToUpdate.setIsDisabled(updatedRate.getIsDisabled());
+                rateToUpdate.setIsAvailable(updatedRate.getIsAvailable());
+
+                // Step 5: Merge the updated entity
+                em.merge(rateToUpdate);
+                return rateToUpdate;
+
+            } else {
+                // Step 6: Handle constraint violations
+                throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+            }
+        } else {
+            // If updatedRate or its ID is null, throw an exception
+            throw new RoomRateNotFoundException("Rate ID not provided for rate to be updated.");
+        }
     }
-    if (name != null) {
-        rate.setName(name);
+    
+    // Helper method to format validation errors into a readable message
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Rate>> constraintViolations) {
+        StringBuilder msg = new StringBuilder("Input data validation error:");
+        for (ConstraintViolation<Rate> violation : constraintViolations) {
+            msg.append("\n").append(violation.getPropertyPath()).append(" - ").append(violation.getMessage());
+        }
+        return msg.toString();
     }
-    if (roomType != null) {
-        rate.setRoomType(roomType);
-    }
-    if (rateType != null) {
-        rate.setRateType(rateType);
-    }
-    if (ratePerNight != null){
-        rate.setRatePerNight(ratePerNight);
-    }
-    if (startDate != null) {
-        rate.setStartDate(startDate);
-    }
-    if (endDate != null) {
-        rate.setEndDate(endDate);
-    }
-  
-    em.merge(rate);
-    return rate;
-}   
+    
+    
+    
     //Delete RoomRate details
+    @Override
     public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException {
         Rate roomRate = em.find(Rate.class, rateId);
        if (roomRate == null) {
@@ -92,11 +139,87 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         return !query.getResultList().isEmpty();
     }
     
-    //View All Room Rates
-    public List<Rate> retrieveAllEmployees() {
-    Query query = em.createQuery("SELECT r FROM Rate r");
-    return query.getResultList();
+    //View All Room Rates   
+    @Override
+    public List<Rate> retrieveAllRoomRates() {
+        Query query = em.createQuery("SELECT r FROM Rate r");
+        return query.getResultList();
     }
+    
+    //Reservation rate for each day 
+    @Override
+    public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException {
+        List<Rate> rates = roomType.getRoomRate();
+        BigDecimal reservationRate = null;
+
+        // Priority 1: Promotion Rate
+        for (Rate rate : rates) {
+            if (rate.getRateType() == RateType.PROMOTION && isDateWithinRange(rate, date)) {
+                reservationRate = rate.getRatePerNight();
+                break;
+            }
+        }
+
+        // Priority 2: Peak Rate (if no Promotion Rate found)
+        if (reservationRate == null) {
+            for (Rate rate : rates) {
+                if (rate.getRateType() == RateType.PEAK && isDateWithinRange(rate, date)) {
+                    reservationRate = rate.getRatePerNight();
+                    break;
+                }
+            }
+        }
+
+        // Priority 3: Normal Rate (if no Promotion or Peak Rate found)
+        if (reservationRate == null) {
+            for (Rate rate : rates) {
+                if (rate.getRateType() == RateType.NORMAL) {
+                    reservationRate = rate.getRatePerNight();
+                    break;
+                }
+            }
+        }
+
+        // If no rate was found, throw an exception
+        if (reservationRate == null) {
+            throw new NoApplicableRateException("No applicable rate found for RoomType: " + roomType.getName() + " on date: " + date);
+        }
+
+        return reservationRate;
+    }
+    
+    //Walk in rate per night
+    @Override
+    public BigDecimal getWalkInRate(RoomType roomType) throws RoomRateNotFoundException {
+    List<Rate> rates = roomType.getRoomRate();
+
+    for (Rate rate : rates) {
+        if (rate.getRateType() == RateType.PUBLISHED) {
+            // If a Published Rate is found, return it immediately
+            return rate.getRatePerNight();
+        }
+    }
+
+    // If no Published Rate is found in the list, throw an exception
+    throw new RoomRateNotFoundException("No Published Rate found for room type: " + roomType.getName());
+}
+   
+    
+    
+    private boolean isDateWithinRange(Rate rate, Date date) {
+    Date startDate = rate.getStartDate();
+    Date endDate = rate.getEndDate();
+
+    // Check if the rate has a defined start and end date
+    if (startDate != null && endDate != null) {
+        return !date.before(startDate) && !date.after(endDate);  // date >= startDate && date <= endDate
+    }
+
+    // If there's no startDate and endDate, consider it invalid
+    return false;
+}
+    
+    
 
    
     

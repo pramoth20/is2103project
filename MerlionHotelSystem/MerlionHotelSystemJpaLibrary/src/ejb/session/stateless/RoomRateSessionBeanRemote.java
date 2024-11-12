@@ -4,7 +4,17 @@
  */
 package ejb.session.stateless;
 
+import entity.Rate;
+import entity.RoomType;
+import enums.RateType;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import javax.ejb.Remote;
+import util.exception.InputDataValidationException;
+import util.exception.NoApplicableRateException;
+import util.exception.RoomRateNotFoundException;
+import util.exception.UpdateRoomRateException;
 
 /**
  *
@@ -12,5 +22,17 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoomRateSessionBeanRemote {
+    public Rate createRate(Rate rate);
     
+    public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException;
+    
+    public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException;
+    
+    public List<Rate> retrieveAllRoomRates();
+    
+    public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException;
+    
+    public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException;
+    
+    public BigDecimal getWalkInRate(RoomType roomType) throws RoomRateNotFoundException;
 }

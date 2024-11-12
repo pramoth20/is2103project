@@ -4,12 +4,17 @@
  */
 package entity;
 
+import enums.ReservationType;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,6 +25,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -34,11 +42,26 @@ public class Reservation implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
     
-    private String roomNumber;
     private boolean isAllocated;
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date reservationDate;
+    
+    @Temporal(TemporalType.DATE)
+    private Date checkInDate;
+    
+    @Temporal(TemporalType.DATE)
+    private Date checkOutDate;
+    
+    @Column(nullable = false, precision = 11, scale = 2)
+    @NotNull
+    @DecimalMin("0.00")
+    @Digits(integer = 9, fraction = 2) // 11 digits total with 2 after the decimal point
+    private BigDecimal totalCost;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReservationType reservationType;
     
     @ManyToMany
     @JoinTable(
@@ -73,12 +96,16 @@ public class Reservation implements Serializable {
     }
 
 
-    public Reservation(String roomNumber, boolean isAllocated, Date reservationDate, Customer customer) {
+    public Reservation(boolean isAllocated, Date reservationDate, Date checkInDate, Date checkOutDate, 
+            Customer customer, BigDecimal totalCost, ReservationType reservationType) {
         this();
-        this.roomNumber = roomNumber;
         this.isAllocated = isAllocated;
         this.reservationDate = reservationDate;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
         this.customer = customer;
+        this.totalCost = totalCost;
+        this.reservationType = reservationType;
     }
     
     
@@ -90,17 +117,6 @@ public class Reservation implements Serializable {
 
     public void setReservationId(Long reservationId) {
         this.reservationId = reservationId;
-    }
-    
-    public String getRoomNumber() {
-        return roomNumber;
-    }
-
-    /**
-     * @param roomNumber the roomNumber to set
-     */
-    public void setRoomNumber(String roomNumber) {
-        this.roomNumber = roomNumber;
     }
 
     /**
@@ -197,6 +213,62 @@ public class Reservation implements Serializable {
     @Override
     public String toString() {
         return "entity.Reservation[ id=" + getReservationId() + " ]";
+    }
+
+    /**
+     * @return the checkInDate
+     */
+    public Date getCheckInDate() {
+        return checkInDate;
+    }
+
+    /**
+     * @param checkInDate the checkInDate to set
+     */
+    public void setCheckInDate(Date checkInDate) {
+        this.checkInDate = checkInDate;
+    }
+
+    /**
+     * @return the checkOutDate
+     */
+    public Date getCheckOutDate() {
+        return checkOutDate;
+    }
+
+    /**
+     * @param checkOutDate the checkOutDate to set
+     */
+    public void setCheckOutDate(Date checkOutDate) {
+        this.checkOutDate = checkOutDate;
+    }
+
+    /**
+     * @return the totalCost
+     */
+    public BigDecimal getTotalCost() {
+        return totalCost;
+    }
+
+    /**
+     * @param totalCost the totalCost to set
+     */
+    public void setTotalCost(BigDecimal totalCost) {
+        this.totalCost = totalCost;
+    }
+
+    /**
+     * @return the reservationType
+     */
+    public ReservationType getReservationType() {
+        return reservationType;
+    }
+
+    /**
+     * @param reservationType the reservationType to set
+     */
+    public void setReservationType(ReservationType reservationType) {
+        this.reservationType = reservationType;
     }
     
 }

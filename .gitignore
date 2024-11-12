@@ -34,3 +34,5 @@ replay_pid*
 /MerlionHotelSystem/dist/
 /MerlionHotelSystem/MerlionHotelSystemJpaClient/build/
 /MerlionHotelSystem/MerlionHotelSystemJpaClient/dist/
+/MerlionHotelSystem/HoRSReservationClient/nbproject/private/
+/MerlionHotelSystem/HoRSReservationClient/build/

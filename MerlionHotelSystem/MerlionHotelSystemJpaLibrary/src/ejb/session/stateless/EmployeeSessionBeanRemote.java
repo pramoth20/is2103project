@@ -20,9 +20,12 @@ public interface EmployeeSessionBeanRemote {
     public Employee getEmployeeById(Long employeeId);
     //public Long createEmployee(Employee employee);   
     public List<Employee> retrieveAllEmployees();
+    
     public Employee retrieveEmployeeByUsername(String username) throws EmployeeNotFoundException;
+    
     public Employee login(String username, String password) throws InvalidLoginCredentialException;
     
     public void employeeLogout(Employee employee);
+    
     public Employee createEmployee(String username, String password, EmployeeRole position);
 }

@@ -22,8 +22,8 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-   public RoomType createRoomType(String name) {
-       RoomType roomType = new RoomType(name);
+   public RoomType createRoomType(String name, String details) {
+       RoomType roomType = new RoomType(name, details);
        em.persist(roomType);
         em.flush();
         return roomType;

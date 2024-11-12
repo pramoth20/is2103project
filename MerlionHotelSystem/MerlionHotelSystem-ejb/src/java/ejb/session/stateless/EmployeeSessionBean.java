@@ -78,6 +78,7 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
 
     }
 
+    @Override
     public Employee login(String username, String password) throws InvalidLoginCredentialException {
         try {
             Employee employee = retrieveEmployeeByUsername(username);

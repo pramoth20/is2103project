@@ -20,4 +20,6 @@ public interface RoomAllocationSessionBeanRemote {
     
     public void allocateRoomReservationsToday() throws RoomAllocationException;
     
+    public void allocateRoom(Date date) throws RoomAllocationException;
+    
 }

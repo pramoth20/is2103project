@@ -217,9 +217,9 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     return false;
 }
     
-    
+}
 
-    @Override
+    /*@Override
     public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException {
         Query query = em.createQuery("SELECT r FROM Rate r WHERE r.roomType = :roomType AND r.rateType = :rateType AND r.isDisabled = false");
         query.setParameter("roomType", roomType);
@@ -232,4 +232,4 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
             throw new RoomRateNotFoundException("Published rate for room type " + roomType.getName() + " cannot be found.");
         }
     }
-}
+}*/

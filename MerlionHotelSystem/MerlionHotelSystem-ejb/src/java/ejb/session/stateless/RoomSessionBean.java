@@ -12,6 +12,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import util.exception.RoomNotFoundException;
 
 @Stateless
 public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLocal {
@@ -31,8 +32,17 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         return room.getRoomId();
     }
     
+
+    
     @Override
-    public Room retrieveRoomById(Long roomId) {
+    public Room retrieveRoomById(Long roomId) throws RoomNotFoundException {
+        Room room = em.find(Room.class, roomId);
+    
+    if (room == null) {
+        throw new RoomNotFoundException("Room ID " + roomId + " does not exist.");
+    }
+    
+    return room;
         //method logic
     }
 

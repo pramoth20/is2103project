@@ -27,8 +27,6 @@ public interface RoomSessionBeanLocal {
 
     public Room retrieveRoomById(Long roomId);
 
-    public List<Room> searchAvailableRooms(RoomType roomType);
-
     public void checkInGuest(Long roomId);
 
     public void checkOutGuest(Long roomId);

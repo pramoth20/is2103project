@@ -33,23 +33,4 @@ public interface RoomRateSessionBeanLocal {
 
     public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException;
 
-    
-    
-    // Use Case 17: Create New Room Rate
-    public Rate createRoomRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate);
-    
-    // Use Case 18: View Room Rate Details
-    public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException;
-    
-    // Use Case 19: Update Room Rate
-    public Rate updateRoomRateDetails(Long rateId, String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) throws RoomRateNotFoundException;
-    
-    // Use Case 20: Delete Room Rate
-    public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException;
-    
-    // Use Case 21: View All Room Rates
-    public List<Rate> retrieveAllRoomRates();
-    
-    // Get Published Rate for Room Type
-    public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException;
 }

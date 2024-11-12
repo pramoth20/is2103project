@@ -8,14 +8,11 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import util.exception.RoomRateNotFoundException;
 
-/**
- *
- * @author jwong
- */
 @Stateless
 public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateSessionBeanLocal {
 
@@ -29,18 +26,18 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         em.persist(roomRate);
         em.flush();
         return roomRate;
-    }  
-    
+    }
+
     // Use Case 18: View Room Rate Details
     @Override
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException {
         Rate roomRate = em.find(Rate.class, rateId);
         if (roomRate == null) {
             throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
-        } 
+        }
         return roomRate;
     }
-    
+
     // Use Case 19: Update Room Rate
     @Override
     public Rate updateRoomRateDetails(Long rateId, String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) throws RoomRateNotFoundException {
@@ -48,7 +45,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         if (rate == null) {
             throw new RoomRateNotFoundException("Rate with ID " + rateId + " not found.");
         }
-        
+
         // Update the fields only if they are provided (not null)
         if (name != null) {
             rate.setName(name);
@@ -71,7 +68,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
         em.merge(rate);
         return rate;
-    }   
+    }
 
     // Use Case 20: Delete Room Rate
     @Override
@@ -79,7 +76,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         Rate roomRate = em.find(Rate.class, rateId);
         if (roomRate == null) {
             throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
-        } 
+        }
 
         // If the rate is in use, mark it as disabled. Otherwise, delete it.
         if (isRateInUse(roomRate)) {
@@ -103,7 +100,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         Query query = em.createQuery("SELECT r FROM Rate r");
         return query.getResultList();
     }
-    
+
     @Override
     public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException {
         Query query = em.createQuery("SELECT r FROM Rate r WHERE r.roomType = :roomType AND r.rateType = :rateType AND r.isDisabled = false");

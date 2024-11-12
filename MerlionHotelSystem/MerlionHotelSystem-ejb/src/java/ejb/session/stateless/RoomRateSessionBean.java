@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/J2EE/EJB30/StatelessEjbClass.java to edit this template
- */
 package ejb.session.stateless;
 
 import entity.Rate;
@@ -13,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.validation.ConstraintViolation;
@@ -24,10 +21,6 @@ import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
 import util.exception.UpdateRoomRateException;
 
-/**
- *
- * @author jwong
- */
 @Stateless
 public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateSessionBeanLocal {
 
@@ -57,13 +50,14 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 }
     
     //View Room Details
+
     @Override
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException {
-       Rate roomRate = em.find(Rate.class, rateId);
-       if (roomRate == null) {
-           throw new RoomRateNotFoundException("Room Rate of Id " + rateId + " cannnot be found");
-       } 
-       return roomRate;
+        Rate roomRate = em.find(Rate.class, rateId);
+        if (roomRate == null) {
+            throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
+        }
+        return roomRate;
     }
     
     public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException {
@@ -122,24 +116,28 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     @Override
     public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException {
         Rate roomRate = em.find(Rate.class, rateId);
-       if (roomRate == null) {
-           throw new RoomRateNotFoundException("Room Rate of Id " + rateId + " cannnot be found");
-       } 
-       if (isRateInUse(roomRate)) {
+        if (roomRate == null) {
+            throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
+        }
+
+        // If the rate is in use, mark it as disabled. Otherwise, delete it.
+        if (isRateInUse(roomRate)) {
             roomRate.setIsDisabled(true);  // Mark as disabled if it's in use
-            em.merge(roomRate); // Update to save disabled status
+            em.merge(roomRate);  // Update to save disabled status
         } else {
             em.remove(roomRate);  // Delete if not in use
         }
     }
-       
+
+    // Helper method to check if the rate is currently in use by any reservation
     private boolean isRateInUse(Rate rate) {
-        Query query = em.createQuery("SELECT r FROM Reservation r WHERE r.rate = :rate");
+        Query query = em.createQuery("SELECT r FROM Reservation r WHERE :rate MEMBER OF r.rates");
         query.setParameter("rate", rate);
         return !query.getResultList().isEmpty();
     }
     
     //View All Room Rates   
+
     @Override
     public List<Rate> retrieveAllRoomRates() {
         Query query = em.createQuery("SELECT r FROM Rate r");
@@ -221,6 +219,17 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     
     
 
-   
-    
+    @Override
+    public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException {
+        Query query = em.createQuery("SELECT r FROM Rate r WHERE r.roomType = :roomType AND r.rateType = :rateType AND r.isDisabled = false");
+        query.setParameter("roomType", roomType);
+        query.setParameter("rateType", RateType.PUBLISHED);
+
+        try {
+            Rate rate = (Rate) query.getSingleResult();
+            return rate.getRatePerNight();
+        } catch (NoResultException ex) {
+            throw new RoomRateNotFoundException("Published rate for room type " + roomType.getName() + " cannot be found.");
+        }
+    }
 }

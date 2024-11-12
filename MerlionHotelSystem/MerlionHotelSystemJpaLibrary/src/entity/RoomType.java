@@ -66,9 +66,6 @@ public class RoomType implements Serializable {
         this.nextRoomType = nextRoomType;
         this.details = details;
     }
-    
-    
-
 
     public String getName() {
         return name;

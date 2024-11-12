@@ -210,5 +210,22 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
 }
     
     
+            
+    
+
+    
+    
+    @Override
+    public void updateReservation(Reservation reservation) {
+        // Find the existing reservation to ensure it is present
+        Reservation existingReservation = em.find(Reservation.class, reservation.getReservationId());
+
+        if (existingReservation != null) {
+            // Use the EntityManager's merge method to update the reservation
+            em.merge(reservation);
+        } else {
+            throw new IllegalArgumentException("Reservation with ID " + reservation.getReservationId() + " does not exist.");
+        }
+    }
     
 }

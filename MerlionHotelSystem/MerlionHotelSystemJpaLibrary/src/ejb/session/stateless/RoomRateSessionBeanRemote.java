@@ -16,6 +16,7 @@ import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
 import util.exception.UpdateRoomRateException;
 
+
 /**
  *
  * @author jwong
@@ -35,4 +36,5 @@ public interface RoomRateSessionBeanRemote {
     public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException;
     
     public BigDecimal getWalkInRate(RoomType roomType) throws RoomRateNotFoundException;
+
 }

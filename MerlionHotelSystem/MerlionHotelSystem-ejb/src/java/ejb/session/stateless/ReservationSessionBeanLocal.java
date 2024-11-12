@@ -37,7 +37,6 @@ public interface ReservationSessionBeanLocal {
     public Long createWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomRateNotFoundException;
 
 
-    
-    
+    public void updateReservation(Reservation reservation);
     
 }

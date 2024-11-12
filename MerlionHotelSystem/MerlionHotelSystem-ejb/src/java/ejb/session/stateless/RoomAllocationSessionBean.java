@@ -44,7 +44,9 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         allocateRoom(today);
     }
     
+
     /*public void allocateRoom(Date date) throws RoomAllocationException {
+
         List<Reservation> reservations = getReservationForCheckInDate(date);
  
         
@@ -101,6 +103,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
 
     
+    @Override
     public void allocateRoom(Date date) throws RoomAllocationException {
     List<Reservation> reservations = getReservationForCheckInDate(date);
     boolean allocationFailed = false;  // Track if any reservation couldn't be fully allocated

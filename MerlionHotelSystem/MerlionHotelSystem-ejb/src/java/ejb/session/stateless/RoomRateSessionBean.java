@@ -43,6 +43,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         validator = validatorFactory.getValidator();
     }
     
+    @Override
     public Rate createRate(Rate rate) {
     em.persist(rate);
     em.flush();  // Ensure the rate is persisted and the ID is generated
@@ -60,6 +61,7 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         return roomRate;
     }
     
+    @Override
     public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException {
         // Step 1: Basic validation to ensure `updatedRate` and its ID are present
         if (updatedRate != null && updatedRate.getRateId() != null) {

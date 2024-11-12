@@ -17,7 +17,7 @@ import util.exception.RoomAllocationException;
 @Remote
 public interface RoomAllocationSessionBeanRemote {
     public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms);
-    
     public void allocateRoomReservationsToday() throws RoomAllocationException;
+    public void allocateRoom(Date date) throws RoomAllocationException;
     
 }

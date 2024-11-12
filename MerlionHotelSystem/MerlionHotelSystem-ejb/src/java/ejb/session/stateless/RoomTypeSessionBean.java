@@ -19,8 +19,8 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-   public RoomType createRoomType(String name, String details) {
-       RoomType roomType = new RoomType(name, details);
+   public RoomType createRoomType(String name) {
+       RoomType roomType = new RoomType(name);
        em.persist(roomType);
 
         em.flush();
@@ -51,7 +51,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     // Update Room Type
     @Override
-    public RoomType updateRoomType(Long roomTypeId, String name, String details) throws RoomTypeNotFoundException {
+    public RoomType updateRoomType(Long roomTypeId, String name) throws RoomTypeNotFoundException {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
         if (roomType == null) {
             throw new RoomTypeNotFoundException("Room Type with ID " + roomTypeId + " cannot be found and updated.");
@@ -59,9 +59,6 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
         if (name != null) {
             roomType.setName(name);
-        }
-        if (details != null) {
-            roomType.setDetails(details);
         }
 
         em.merge(roomType);

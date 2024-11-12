@@ -9,6 +9,7 @@ import entity.RoomType;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
+import util.exception.RoomNotFoundException;
 
 /**
  *
@@ -20,7 +21,7 @@ public interface RoomSessionBeanRemote {
         public void updateRoom(Room room);
         public void deleteRoom(Long roomId);
         public List<Room> retrieveAllRooms();
-        public Room retrieveRoomById(Long roomId);
+        public Room retrieveRoomById(Long roomId) throws RoomNotFoundException;
         public List<Room> searchAvailableRoomsForDates(RoomType roomType, Date checkInDate, Date checkOutDate);
         public void checkInGuest(Long roomId);
         public void checkOutGuest(Long roomId);

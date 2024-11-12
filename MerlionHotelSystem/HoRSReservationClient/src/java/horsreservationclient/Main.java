@@ -9,7 +9,6 @@ import ejb.session.stateless.ReservationSessionBeanRemote;
 import ejb.session.stateless.RoomAllocationSessionBeanRemote;
 import ejb.session.stateless.RoomRateSessionBeanRemote;
 import javax.ejb.EJB;
-import util.exception.InvalidLoginCredentialException;
 
 /**
  *

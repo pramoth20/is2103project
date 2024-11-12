@@ -36,8 +36,6 @@ public class RoomType implements Serializable {
     @JoinColumn(name = "next_room_type_id")
     private RoomType nextRoomType;
     
-    @Column(length = 225)
-    private String details;
     
     /*@Column(nullable = false)
     private Boolean canChange; //facilitate the changing of the rooms
@@ -60,11 +58,10 @@ public class RoomType implements Serializable {
         //rooms = new ArrayList<>();
     }
 
-    public RoomType(String name, String details) {
+    public RoomType(String name) {
         this();
         this.name = name;
         this.nextRoomType = nextRoomType;
-        this.details = details;
     }
 
     public String getName() {
@@ -106,21 +103,6 @@ public class RoomType implements Serializable {
     @Override
     public String toString() {
         return "entity.RoomType[ id=" + roomTypeId + " ]";
-    }
-
-
-    /**
-     * @return the details
-     */
-    public String getDetails() {
-        return details;
-    }
-
-    /**
-     * @param details the details to set
-     */
-    public void setDetails(String details) {
-        this.details = details;
     }
 
     /**

@@ -73,6 +73,16 @@ public class Rate implements Serializable {
     public Rate() {
     }
 
+//    public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
+//        this.name = name;
+//        this.roomType = roomType;
+//        this.rateType = rateType;
+//        this.ratePerNight = ratePerNight;
+//        this.startDate = startDate;
+//        this.endDate = endDate;
+//    }
+    
+    // Constructor for Peak and Promotion rates (with start and end dates)
     public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
         this.name = name;
         this.roomType = roomType;
@@ -80,6 +90,16 @@ public class Rate implements Serializable {
         this.ratePerNight = ratePerNight;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    // Overloaded constructor for Normal and Published rates (no start and end dates)
+    public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight) {
+        this.name = name;
+        this.roomType = roomType;
+        this.rateType = rateType;
+        this.ratePerNight = ratePerNight;
+        this.startDate = null;
+        this.endDate = null;
     }
 
     // Method to check if the rate can be deleted
@@ -162,16 +182,32 @@ public class Rate implements Serializable {
         return startDate;
     }
 
+//    public void setStartDate(Date startDate) {
+//        this.startDate = startDate;
+//    }
+    
     public void setStartDate(Date startDate) {
-        this.startDate = startDate;
+        if (rateType == RateType.PEAK || rateType == RateType.PROMOTION) {
+            this.startDate = startDate;
+        } else {
+            this.startDate = null; // Clear start date for Normal and Published rates
+        }
     }
 
     public Date getEndDate() {
         return endDate;
     }
 
+//    public void setEndDate(Date endDate) {
+//        this.endDate = endDate;
+//    }
+    
     public void setEndDate(Date endDate) {
-        this.endDate = endDate;
+        if (rateType == RateType.PEAK || rateType == RateType.PROMOTION) {
+            this.endDate = endDate;
+        } else {
+            this.endDate = null; // Clear end date for Normal and Published rates
+        }
     }
 
     public boolean getIsDisabled() {

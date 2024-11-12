@@ -10,10 +10,12 @@ import ejb.session.stateless.*;
 import entity.Partner;
 import entity.Rate;
 import entity.Reservation;
+import entity.ReservationRoom;
 import entity.Room;
 import entity.RoomType;
 import enums.EmployeeRole;
 import enums.RateType;
+import enums.ReservationType;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
@@ -21,8 +23,16 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.ejb.Schedule;
 import util.exception.InvalidLoginCredentialException;
+import util.exception.PartnerExistsException;
+import util.exception.RoomNotFoundException;
 import util.exception.RoomRateNotFoundException;
 import util.exception.RoomTypeNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import util.exception.InputDataValidationException;
+import util.exception.RoomAllocationException;
+import util.exception.UpdateRoomRateException;
 
 public class Main {
     private EmployeeSessionBeanRemote employeeSessionBean;
@@ -51,7 +61,7 @@ public class Main {
 
 
 
-    public void start() {
+    public void start() throws PartnerExistsException, RoomNotFoundException, UpdateRoomRateException, RoomRateNotFoundException, InputDataValidationException {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -70,7 +80,7 @@ public class Main {
         }
     }
 
-    public void showMenu() {
+    public void showMenu() throws PartnerExistsException, RoomNotFoundException, UpdateRoomRateException, RoomRateNotFoundException, InputDataValidationException {
         EmployeeRole role = loggedInEmployee.getPosition(); // Role is retrieved from the logged-in employee
 
         System.out.println("\nWelcome, " + loggedInEmployee.getUsername() + "!");
@@ -99,7 +109,7 @@ public class Main {
         }
     }
 
-    private void showAdminMenu() {
+    private void showAdminMenu() throws PartnerExistsException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("1. Create New Employee");
         System.out.println("2. View All Employees");
@@ -130,7 +140,7 @@ public class Main {
         }
     }
 
-    private void showOperationManagerMenu() {
+    private void showOperationManagerMenu() throws RoomNotFoundException {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -191,7 +201,7 @@ public class Main {
         }
     }
 
-    private void showSalesManagerMenu() {
+    private void showSalesManagerMenu() throws UpdateRoomRateException, InputDataValidationException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("1. Create New Room Rate");
         System.out.println("2. Update Room Rate");
@@ -222,7 +232,7 @@ public class Main {
         }
     }
 
-    private void showGuestRelationsMenu() {
+    private void showGuestRelationsMenu() throws RoomRateNotFoundException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("1. Walk-In Search Room");
         System.out.println("2. Walk-In Reserve Room");
@@ -307,7 +317,7 @@ public class Main {
     }
 
     //USE CASE 5: CREATE NEW PARTNER
-    private void createNewPartner() {
+    private void createNewPartner() throws PartnerExistsException {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("---- Create New Partner ----");
@@ -317,8 +327,10 @@ public class Main {
         String email = scanner.nextLine();
         System.out.print("Enter Partner Phone Number: ");
         String phoneNumber = scanner.nextLine();  
+        System.out.print("Enter Partner password: ");
+        String password = scanner.nextLine();
 
-        Partner newPartner = new Partner(name, email, phoneNumber);
+        Partner newPartner = new Partner(name, email, phoneNumber, password);
         Long partnerId = partnerSessionBean.createPartner(newPartner);
         System.out.println("Partner created successfully with ID: " + partnerId);
     }
@@ -348,7 +360,7 @@ public class Main {
         String name = scanner.nextLine();
         System.out.print("Enter Room Type Details: ");
         String details = scanner.nextLine();
-        RoomType roomType = roomTypeSessionBean.createRoomType(name, details);
+        RoomType roomType = roomTypeSessionBean.createRoomType(name);
         System.out.println("Room Type created successfully with ID: " + roomType.getRoomTypeId());
     }
     
@@ -364,8 +376,7 @@ public class Main {
             RoomType roomType = roomTypeSessionBean.getRoomTypeDetails(roomTypeId);
             System.out.println("Room Type ID: " + roomType.getRoomTypeId());
             System.out.println("Name: " + roomType.getName());
-            System.out.println("Details: " + roomType.getDetails());
-            System.out.println("Is Disabled: " + roomType.getIsDisabled());
+            System.out.println("Is Disabled: " + roomType.getIsDisabled()); //remove
             System.out.println("Is Available: " + roomType.getIsAvailable());
         } catch (RoomTypeNotFoundException ex) {
             System.out.println("Error: " + ex.getMessage());
@@ -388,7 +399,7 @@ public class Main {
         String details = scanner.nextLine();
 
         try {
-            RoomType updatedRoomType = roomTypeSessionBean.updateRoomType(roomTypeId, name.isEmpty() ? null : name, details.isEmpty() ? null : details);
+            RoomType updatedRoomType = roomTypeSessionBean.updateRoomType(roomTypeId, name.isEmpty() ? null : name);
             System.out.println("Room Type updated successfully: " + updatedRoomType.getName());
         } catch (RoomTypeNotFoundException ex) {
             System.out.println("Error: " + ex.getMessage());
@@ -421,7 +432,6 @@ public class Main {
             for (RoomType roomType : roomTypes) {
                 System.out.println("ID: " + roomType.getRoomTypeId() +
                                    ", Name: " + roomType.getName() +
-                                   ", Details: " + roomType.getDetails() +
                                    ", Disabled: " + roomType.getIsDisabled());
             }
         }
@@ -456,7 +466,7 @@ public class Main {
     }
     
     //USE CASE 13: UPDATE ROOM
-    private void updateRoom() {
+    private void updateRoom() throws RoomNotFoundException {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("---- Update Room ----");
@@ -535,7 +545,7 @@ public class Main {
 
         System.out.print("Enter Room Type ID: ");
         Long roomTypeId = scanner.nextLong();
-        scanner.nextLine();  // consume newline
+        scanner.nextLine(); // consume newline
 
         System.out.print("Enter Rate Type (PUBLISHED/NORMAL/PEAK/PROMOTION): ");
         String rateTypeInput = scanner.nextLine();
@@ -543,22 +553,44 @@ public class Main {
 
         System.out.print("Enter Rate Per Night (Decimal Value): ");
         BigDecimal ratePerNight = scanner.nextBigDecimal();
+        scanner.nextLine(); // consume newline
 
         System.out.print("Enter Start Date (yyyy-MM-dd) [Leave blank if not applicable]: ");
-        scanner.nextLine();  // consume newline
         String startDateInput = scanner.nextLine();
-        Date startDate = startDateInput.isEmpty() ? null : Date.valueOf(startDateInput);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDate = null;
+
+        if (!startDateInput.isEmpty()) {
+            try {
+                startDate = dateFormat.parse(startDateInput);
+            } catch (ParseException e) {
+                System.out.println("Invalid date format for start date. Please use yyyy-MM-dd.");
+                return; // Exit the method if the date is invalid
+            }
+        }
 
         System.out.print("Enter End Date (yyyy-MM-dd) [Leave blank if not applicable]: ");
         String endDateInput = scanner.nextLine();
-        Date endDate = endDateInput.isEmpty() ? null : Date.valueOf(endDateInput);
+        Date endDate = null;
+
+        if (!endDateInput.isEmpty()) {
+            try {
+                endDate = dateFormat.parse(endDateInput);
+            } catch (ParseException e) {
+                System.out.println("Invalid date format for end date. Please use yyyy-MM-dd.");
+                return; // Exit the method if the date is invalid
+            }
+        }
 
         try {
             RoomType roomType = roomTypeSessionBean.getRoomTypeDetails(roomTypeId);
-            Rate rate = roomRateSessionBean.createRoomRate(name, roomType, rateType, ratePerNight, startDate, endDate);
+            Rate rate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
+            roomRateSessionBean.createRate(rate);
             System.out.println("Room Rate created successfully with ID: " + rate.getRateId());
         } catch (RoomTypeNotFoundException ex) {
-            System.out.println("Error: Room Type not found. " + ex.getMessage());
+            System.out.println("Room Type not found for ID: " + roomTypeId);
+        } catch (Exception ex) {
+            System.out.println("An error occurred: " + ex.getMessage());
         }
     }
     
@@ -586,7 +618,7 @@ public class Main {
     
     
     //USE CASE 19: UPDATE ROOM RATE
-    private void updateRoomRate() {
+    private void updateRoomRate() throws UpdateRoomRateException, InputDataValidationException {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("---- Update Room Rate ----");
@@ -609,17 +641,37 @@ public class Main {
         String ratePerNightInput = scanner.nextLine();
         BigDecimal ratePerNight = ratePerNightInput.isEmpty() ? null : new BigDecimal(ratePerNightInput);
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDate = null;
+        Date endDate = null;
+
         System.out.print("Enter Updated Start Date (yyyy-MM-dd) [Leave blank if unchanged]: ");
         String startDateInput = scanner.nextLine();
-        Date startDate = startDateInput.isEmpty() ? null : Date.valueOf(startDateInput);
+        if (!startDateInput.isEmpty()) {
+            try {
+                startDate = dateFormat.parse(startDateInput);
+            } catch (ParseException e) {
+                System.out.println("Invalid start date format. Please use yyyy-MM-dd.");
+                return; // Exit the method if the date is invalid
+            }
+        }
 
         System.out.print("Enter Updated End Date (yyyy-MM-dd) [Leave blank if unchanged]: ");
         String endDateInput = scanner.nextLine();
-        Date endDate = endDateInput.isEmpty() ? null : Date.valueOf(endDateInput);
+        if (!endDateInput.isEmpty()) {
+            try {
+                endDate = dateFormat.parse(endDateInput);
+            } catch (ParseException e) {
+                System.out.println("Invalid end date format. Please use yyyy-MM-dd.");
+                return; // Exit the method if the date is invalid
+            }
+        }
 
         try {
             RoomType roomType = roomTypeId == 0 ? null : roomTypeSessionBean.getRoomTypeDetails(roomTypeId);
-            Rate rate = roomRateSessionBean.updateRoomRateDetails(rateId, name, roomType, rateType, ratePerNight, startDate, endDate);
+            Rate rate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
+            //might have an error as we are unsure of the method returns
+            Rate updateRoomRateDetails = roomRateSessionBean.updateRoomRateDetails(rate);
             System.out.println("Room Rate updated successfully: " + rate.getName());
         } catch (RoomRateNotFoundException ex) {
             System.out.println("Error: " + ex.getMessage());
@@ -656,7 +708,7 @@ public class Main {
     
     //USE CASE 22: ALLOCATE ROOMS TO RESERVATIONS
     @Schedule(hour = "2", minute = "0", info = "Daily Room Allocation Timer")
-    public void allocateRoomReservationsToday() {
+    public void allocateRoomReservationsToday() throws RoomAllocationException {
         Date today = new Date();
         roomAllocationSessionBean.allocateRoom(today);
     }
@@ -664,7 +716,7 @@ public class Main {
     /* The next 10 methods are for the GUEST_RELATION_OFFICER role, on top of each method, i will state the use case number and description*/
     
     //USE CASE 23: WALK IN SEARCH ROOM
-    private void walkInSearchRoom() {
+    private void walkInSearchRoom() throws RoomRateNotFoundException {
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter check-in date (yyyy-MM-dd): ");
@@ -709,8 +761,6 @@ public class Main {
             }
         } catch (ParseException ex) {
             System.out.println("Invalid date format. Please enter the date in yyyy-MM-dd format.");
-        } catch (RoomTypeNotFoundException ex) {
-            System.out.println("Room type not found.");
         }
     }
     
@@ -719,38 +769,47 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         try {
-            System.out.print("Enter room number to reserve: ");
-            String roomNumber = scanner.nextLine();
+            System.out.println("---- Walk-In Reserve Room ----");
 
-            Room roomToReserve = roomSessionBean.retrieveRoomByNumber(roomNumber);
+            // Get the room type for the reservation
+            System.out.print("Enter Room Type Name to Reserve: ");
+            String roomTypeName = scanner.nextLine();
 
-            if (roomToReserve != null && roomToReserve.getIsAvailable()) {
-                // Get reservation details from the user
-                System.out.print("Enter reservation date (YYYY-MM-DD): ");
-                String dateInput = scanner.nextLine();
-
-                // Parse reservation date
-                Date reservationDate = new SimpleDateFormat("yyyy-MM-dd").parse(dateInput);
-
-                // Create a new reservation with the room's RoomType
-                Reservation reservation = new Reservation(false, reservationDate, roomToReserve.getRoomType());
-
-                // Persist the reservation
-                reservationSessionBean.createNewReservation(reservation);
-
-                // Update the room availability and status
-                roomToReserve.setIsAvailable(false);
-                roomToReserve.setRoomStatus(true);
-                roomSessionBean.updateRoom(roomToReserve);
-
-                System.out.println("Reservation created successfully for room number: " + roomNumber);
-            } else {
-                System.out.println("Room is not available for reservation.");
+            // Find Room Type by name
+            RoomType roomType = roomTypeSessionBean.getRoomTypeDetailsByName(roomTypeName);
+            if (roomType == null) {
+                System.out.println("Room type not found.");
+                return;
             }
-        } catch (Exception ex) {
-            System.out.println("Failed to create reservation. " + ex.getMessage());
+
+            // Get reservation details from the user
+            System.out.print("Enter check-in date (yyyy-MM-dd): ");
+            String checkInDateInput = scanner.nextLine();
+            Date checkInDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkInDateInput);
+
+            System.out.print("Enter check-out date (yyyy-MM-dd): ");
+            String checkOutDateInput = scanner.nextLine();
+            Date checkOutDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkOutDateInput);
+
+            // Get the number of rooms the guest wants to reserve
+            System.out.print("Enter number of rooms to reserve: ");
+            int numberOfRooms = scanner.nextInt();
+
+            // Create reservation through the session bean
+            Long reservationId = reservationSessionBean.createWalkInReservation(roomType, checkInDate, checkOutDate, numberOfRooms);
+
+            // If the reservation is created successfully, print the details
+            System.out.println("Reservation created successfully with ID: " + reservationId);
+        } catch (RoomTypeNotFoundException e) {
+            System.out.println("Room type not found: " + e.getMessage());
+        } catch (RoomRateNotFoundException e) {
+            System.out.println("Room rate not found: " + e.getMessage());
+        } catch (ParseException e) {
+            System.out.println("Invalid date format. Please use yyyy-MM-dd.");
+        } catch (Exception e) {
+            System.out.println("Failed to create reservation. " + e.getMessage());
         }
-    }    
+    }  
     
     //USE CASE 25: CHECK-IN GUEST
     private void checkInGuest() {
@@ -787,6 +846,7 @@ public class Main {
             System.out.println("Failed to check in guest. " + ex.getMessage());
         }
     }
+    
     //USE CASE 26: CHECK-OUT GUEST
     private void checkOutGuest() {
         Scanner scanner = new Scanner(System.in);

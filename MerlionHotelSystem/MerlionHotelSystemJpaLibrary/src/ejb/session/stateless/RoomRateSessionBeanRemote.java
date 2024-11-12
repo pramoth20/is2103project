@@ -37,4 +37,6 @@ public interface RoomRateSessionBeanRemote {
     
     public BigDecimal getWalkInRate(RoomType roomType) throws RoomRateNotFoundException;
 
+    public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException;
+
 }

@@ -9,6 +9,7 @@ import entity.RoomType;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.RoomNotFoundException;
 
 /**
  *
@@ -25,9 +26,7 @@ public interface RoomSessionBeanLocal {
 
     public List<Room> retrieveAllRooms();
 
-    public Room retrieveRoomById(Long roomId);
-
-    public List<Room> searchAvailableRooms(RoomType roomType);
+    public Room retrieveRoomById(Long roomId) throws RoomNotFoundException;
 
     public void checkInGuest(Long roomId);
 

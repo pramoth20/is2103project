@@ -36,6 +36,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         allocateRoom(today);
     }
     
+    @Override
     public void allocateRoom(Date date) {
         List<Reservation> reservations = getReservationForCheckInDate(date);
         

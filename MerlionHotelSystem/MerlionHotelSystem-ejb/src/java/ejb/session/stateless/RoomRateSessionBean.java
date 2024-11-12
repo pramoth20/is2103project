@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/J2EE/EJB30/StatelessEjbClass.java to edit this template
- */
 package ejb.session.stateless;
 
 import entity.Rate;
@@ -12,79 +8,45 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import util.exception.RoomRateNotFoundException;
-
-//for bean validation in the future
-/* 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import java.util.Set; 
-*/
-
 
 @Stateless
 public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateSessionBeanLocal {
 
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
-    
-    //for bean validation in the future
-    /*    private final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator = validatorFactory.getValidator();
 
-    // Create room rate with validation
-    public Rate createRoomRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
-        Rate roomRate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
-        
-        Set<ConstraintViolation<Rate>> violations = validator.validate(roomRate);
-        if (!violations.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (ConstraintViolation<Rate> violation : violations) {
-                sb.append(violation.getMessage()).append("\n");
-            }
-            throw new IllegalArgumentException("Room rate validation failed: " + sb.toString());
-        }
-        
-        em.persist(roomRate);
-        em.flush();
-        return roomRate;
-    }*/
-
-    //create room rate
+    // Use Case 17: Create New Room Rate
     @Override
     public Rate createRoomRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
         Rate roomRate = new Rate(name, roomType, rateType, ratePerNight, startDate, endDate);
         em.persist(roomRate);
         em.flush();
         return roomRate;
-    }  
-    
-    //View Room Details
+    }
+
+    // Use Case 18: View Room Rate Details
     @Override
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException {
-       Rate roomRate = em.find(Rate.class, rateId);
-       if (roomRate == null) {
-           throw new RoomRateNotFoundException("Room Rate of Id " + rateId + " cannnot be found");
-       } 
-       return roomRate;
+        Rate roomRate = em.find(Rate.class, rateId);
+        if (roomRate == null) {
+            throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
+        }
+        return roomRate;
     }
-    
+
+    // Use Case 19: Update Room Rate
     @Override
     public Rate updateRoomRateDetails(Long rateId, String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) throws RoomRateNotFoundException {
         Rate rate = em.find(Rate.class, rateId);
         if (rate == null) {
-            throw new RoomRateNotFoundException("Rate ID " + rateId + " not found.");
+            throw new RoomRateNotFoundException("Rate with ID " + rateId + " not found.");
         }
 
-        // If the rate is disabled, update is not allowed (depending on business logic)
-        if (rate.getIsDisabled()) {
-            throw new IllegalStateException("Cannot update a disabled rate.");
-        }
-
+        // Update the fields only if they are provided (not null)
         if (name != null) {
             rate.setName(name);
         }
@@ -106,38 +68,50 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
         em.merge(rate);
         return rate;
-    } 
-    
-    //Delete RoomRate details
+    }
+
+    // Use Case 20: Delete Room Rate
     @Override
     public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException {
         Rate roomRate = em.find(Rate.class, rateId);
         if (roomRate == null) {
             throw new RoomRateNotFoundException("Room Rate with ID " + rateId + " cannot be found.");
         }
-        // Check if the rate is in use
+
+        // If the rate is in use, mark it as disabled. Otherwise, delete it.
         if (isRateInUse(roomRate)) {
             roomRate.setIsDisabled(true);  // Mark as disabled if it's in use
-            em.merge(roomRate);  // Update to save the disabled status
+            em.merge(roomRate);  // Update to save disabled status
         } else {
             em.remove(roomRate);  // Delete if not in use
         }
     }
 
-    // Helper method to check if the rate is in use
+    // Helper method to check if the rate is currently in use by any reservation
     private boolean isRateInUse(Rate rate) {
         Query query = em.createQuery("SELECT r FROM Reservation r WHERE :rate MEMBER OF r.rates");
         query.setParameter("rate", rate);
         return !query.getResultList().isEmpty();
     }
-    
-    //View All Room Rates
+
+    // Use Case 21: View All Room Rates
     @Override
     public List<Rate> retrieveAllRoomRates() {
         Query query = em.createQuery("SELECT r FROM Rate r");
         return query.getResultList();
     }
 
-   
-    
+    @Override
+    public BigDecimal getPublishedRateForRoomType(RoomType roomType) throws RoomRateNotFoundException {
+        Query query = em.createQuery("SELECT r FROM Rate r WHERE r.roomType = :roomType AND r.rateType = :rateType AND r.isDisabled = false");
+        query.setParameter("roomType", roomType);
+        query.setParameter("rateType", RateType.PUBLISHED);
+
+        try {
+            Rate rate = (Rate) query.getSingleResult();
+            return rate.getRatePerNight();
+        } catch (NoResultException ex) {
+            throw new RoomRateNotFoundException("Published rate for room type " + roomType.getName() + " cannot be found.");
+        }
+    }
 }

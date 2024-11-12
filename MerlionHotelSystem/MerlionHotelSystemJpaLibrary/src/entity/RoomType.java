@@ -59,14 +59,13 @@ public class RoomType implements Serializable {
         roomRate = new ArrayList<>();
         //rooms = new ArrayList<>();
     }
-
-    public RoomType(String name, RoomType nextRoomType, String details, List<Rate> roomRate) {
+  
+    public RoomType(String name, String details) {
+        this();
         this.name = name;
         this.nextRoomType = nextRoomType;
         this.details = details;
-        this.roomRate = roomRate;
     }
-
 
     public String getName() {
         return name;

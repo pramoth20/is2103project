@@ -8,6 +8,7 @@ import entity.RoomType;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import util.exception.RoomTypeNotFoundException;
@@ -20,16 +21,14 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     // Create a new Room Type
     @Override
-    public RoomType createRoomType(String name) {
-        // Check if RoomType with the same name already exists
+    public RoomType createRoomType(String name, String details) {
         Query query = em.createQuery("SELECT r FROM RoomType r WHERE r.name = :name");
         query.setParameter("name", name);
         if (!query.getResultList().isEmpty()) {
             throw new IllegalArgumentException("Room Type with name " + name + " already exists.");
         }
 
-        RoomType roomType = new RoomType();
-        roomType.setName(name);
+        RoomType roomType = new RoomType(name, details);
         em.persist(roomType);
         em.flush();
         return roomType;
@@ -45,16 +44,24 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         return roomType;
     }
 
+    // Get Room Type Details by Name
+    @Override
+    public RoomType getRoomTypeDetailsByName(String roomTypeName) throws RoomTypeNotFoundException {
+        try {
+            Query query = em.createQuery("SELECT r FROM RoomType r WHERE r.name = :name");
+            query.setParameter("name", roomTypeName);
+            return (RoomType) query.getSingleResult();
+        } catch (NoResultException ex) {
+            throw new RoomTypeNotFoundException("Room type with name " + roomTypeName + " cannot be found.");
+        }
+    }
+
     // Update Room Type
     @Override
     public RoomType updateRoomType(Long roomTypeId, String name, String details) throws RoomTypeNotFoundException {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
         if (roomType == null) {
             throw new RoomTypeNotFoundException("Room Type with ID " + roomTypeId + " cannot be found and updated.");
-        }
-
-        if (roomType.getIsDisabled()) {
-            throw new IllegalStateException("Cannot update a disabled Room Type.");
         }
 
         if (name != null) {
@@ -69,6 +76,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     }
 
     // Delete Room Type
+    @Override
     public void deleteRoomType(Long roomTypeId) throws RoomTypeNotFoundException {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
         if (roomType == null) {
@@ -95,6 +103,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     }
 
     // Get Next Room Type
+    @Override
     public RoomType getNextRoomType(RoomType current) {
         if (current.getNextRoomType() != null) {
             return current.getNextRoomType();

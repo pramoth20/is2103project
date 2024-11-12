@@ -5,6 +5,8 @@
 package ejb.session.stateless;
 
 import entity.Room;
+import entity.RoomType;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -27,6 +29,11 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         em.persist(room);
         em.flush();
         return room.getRoomId();
+    }
+    
+    @Override
+    public Room retrieveRoomById(Long roomId) {
+        //method logic
     }
 
     // Use Case 13: Update Room
@@ -67,5 +74,49 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     public List<Room> retrieveAllRooms() {
         Query query = em.createQuery("SELECT r FROM Room r");
         return query.getResultList();
+    }
+    
+    @Override
+    public List<Room> searchAvailableRoomsForDates(RoomType roomType, Date checkInDate, Date checkOutDate) {
+        Query query = em.createQuery(
+            "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isOccupied = false AND r.isDisabled = false AND " +
+            "r.roomId NOT IN (SELECT resRoom.room.roomId FROM ReservationRoom resRoom " +
+            "WHERE resRoom.reservation.checkInDate < :checkOutDate AND resRoom.reservation.checkOutDate > :checkInDate)"
+        );
+        query.setParameter("roomType", roomType);
+        query.setParameter("checkInDate", checkInDate);
+        query.setParameter("checkOutDate", checkOutDate);
+
+        return query.getResultList();
+    }
+    
+    @Override
+    public void checkInGuest(Long roomId) {
+        Room room = em.find(Room.class, roomId);
+        if (room != null && room.getIsAvailable()) {
+            room.setRoomStatus(true);  // Mark the room as occupied
+            em.merge(room);
+        } else {
+            throw new IllegalStateException("Room is not available for check-in.");
+        }
+    }
+    
+    @Override
+    public void checkOutGuest(Long roomId) {
+        Room room = em.find(Room.class, roomId);
+        if (room != null && room.isRoomStatus()) {
+            room.setRoomStatus(false);  // Mark the room as unoccupied
+            room.setIsAvailable(true);
+            em.merge(room);
+        } else {
+            throw new IllegalStateException("Room is not currently occupied.");
+        }
+    }
+    
+    @Override
+    public Room retrieveRoomByNumber(String roomNumber) {
+        Query query = em.createQuery("SELECT r FROM Room r WHERE r.roomNumber = :roomNumber");
+        query.setParameter("roomNumber", roomNumber);
+        return (Room) query.getSingleResult();
     }
 }

@@ -43,7 +43,6 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
     
     return room;
-        //method logic
     }
 
     // Use Case 13: Update Room

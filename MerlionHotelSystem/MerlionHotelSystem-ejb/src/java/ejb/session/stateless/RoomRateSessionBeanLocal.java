@@ -16,6 +16,7 @@ import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
 import util.exception.UpdateRoomRateException;
 
+@Local
 
 public interface RoomRateSessionBeanLocal {
 

@@ -60,6 +60,13 @@ public class RoomType implements Serializable {
         //rooms = new ArrayList<>();
     }
 
+    public RoomType(String name, RoomType nextRoomType, String details, List<Rate> roomRate) {
+        this.name = name;
+        this.nextRoomType = nextRoomType;
+        this.details = details;
+        this.roomRate = roomRate;
+    }
+
 
     public String getName() {
         return name;

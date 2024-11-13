@@ -47,6 +47,12 @@ public class DataInitSessionBean {
 
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
+    
+    private RoomType deluxeRoom;
+    private RoomType premierRoom;
+    private RoomType familyRoom;
+    private RoomType juniorSuite;
+    private RoomType grandSuite;
 
     @PostConstruct
     public void postConstruct() {
@@ -68,11 +74,11 @@ public class DataInitSessionBean {
     }
 
     private void initializeRoomTypeData() throws RoomTypeNotFoundException { //do we need the throw the exception
-        RoomType deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
-        RoomType premierRoom = roomTypeSessionBeanLocal.createRoomType("Premier Room");
-        RoomType familyRoom = roomTypeSessionBeanLocal.createRoomType("Family Room");
-        RoomType juniorSuite = roomTypeSessionBeanLocal.createRoomType("Junior Suite");
-        RoomType grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");
+        deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
+        premierRoom = roomTypeSessionBeanLocal.createRoomType("Premier Room");
+        familyRoom = roomTypeSessionBeanLocal.createRoomType("Family Room");
+        juniorSuite = roomTypeSessionBeanLocal.createRoomType("Junior Suite");
+        grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");
 
         deluxeRoom.setNextRoomType(premierRoom);
         premierRoom.setNextRoomType(familyRoom);
@@ -88,11 +94,11 @@ public class DataInitSessionBean {
     }
 
     private void initializeRoomRateData() {
-        RoomType deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
+        /*RoomType deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
         RoomType premierRoom = roomTypeSessionBeanLocal.createRoomType("Premier Room");
         RoomType familyRoom = roomTypeSessionBeanLocal.createRoomType("Family Room");
         RoomType juniorSuite = roomTypeSessionBeanLocal.createRoomType("Junior Suite");
-        RoomType grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");
+        RoomType grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");*/
 
         roomRateSessionBeanLocal.createRate(new Rate("Deluxe Room Published", deluxeRoom, RateType.PUBLISHED, new BigDecimal("100")));
         roomRateSessionBeanLocal.createRate(new Rate("Deluxe Room Normal", deluxeRoom, RateType.NORMAL, new BigDecimal("50")));
@@ -107,11 +113,11 @@ public class DataInitSessionBean {
     }
 
     private void initializeRoomData() {
-        RoomType deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
+        /*RoomType deluxeRoom = roomTypeSessionBeanLocal.createRoomType("Deluxe Room");
         RoomType premierRoom = roomTypeSessionBeanLocal.createRoomType("Premier Room");
         RoomType familyRoom = roomTypeSessionBeanLocal.createRoomType("Family Room");
         RoomType juniorSuite = roomTypeSessionBeanLocal.createRoomType("Junior Suite");
-        RoomType grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");
+        RoomType grandSuite = roomTypeSessionBeanLocal.createRoomType("Grand Suite");*/
 
         // Creating Rooms
         roomSessionBeanLocal.createRoom(new Room(deluxeRoom, true, 1, 1, "0101", false, true));

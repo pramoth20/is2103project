@@ -49,6 +49,7 @@ public class RoomTypeInitialisationService {
             premier.setNextRoomType(family);
             family.setNextRoomType(juniorSuite);
             juniorSuite.setNextRoomType(grandSuite);
+            grandSuite.setNextRoomType(grandSuite);
 
             // Merge the changes back to the persistence context
             em.merge(deluxe);

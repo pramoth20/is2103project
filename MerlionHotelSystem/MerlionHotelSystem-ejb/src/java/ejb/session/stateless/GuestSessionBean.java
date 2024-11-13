@@ -7,8 +7,11 @@ package ejb.session.stateless;
 import entity.Guest;
 import entity.RoomType;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -17,11 +20,11 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
-import oracle.jrockit.jfr.parser.ParseException;
 import util.exception.GuestAlreadyExistException;
 import util.exception.GuestNotFoundException;
 import util.exception.InvalidDateException;
 import util.exception.InvalidLoginCredentialException;
+import util.exception.RoomUnavailableException;
 
 /**
  *
@@ -106,7 +109,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     
     @Override
     public List<RoomType> searchHotelRooms(Date checkInDate, Date checkOutDate, int numberOfRooms) throws InvalidDateException, java.text.ParseException {
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //Date checkIn;
     //Date checkOut;
     //checkIn = dateFormat.parse(checkInDate);
@@ -116,9 +119,19 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     if (!checkInDate.before(checkOutDate)) {
         throw new InvalidDateException("Check-out date must be after check-in date.");
     }
+    List<RoomType> availableRoomTypes;
+    try {
+        availableRoomTypes = roomAllocationSessionBean.findAvailableRoomTypes(checkInDate, checkOutDate, numberOfRooms);
+    } catch (RoomUnavailableException e) {
+        // Handle exception (e.g., log the error, return an empty list, etc.)
+        System.out.println("No available rooms found: " + e.getMessage());
+        availableRoomTypes = new ArrayList<>();
+    }
+
+    return availableRoomTypes;
 
     
-    return roomAllocationSessionBean.findAvailableRoomTypes(checkInDate, checkOutDate, numberOfRooms);
+    //return roomAllocationSessionBean.findAvailableRoomTypes(checkInDate, checkOutDate, numberOfRooms);
 }
     
     

@@ -15,6 +15,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -74,12 +75,13 @@ public class Reservation implements Serializable {
     @ManyToOne
     private Customer customer;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
     @JoinTable(
         name = "reservation_reservation_room", // Join table name
         joinColumns = @JoinColumn(name = "reservation_id"), // Foreign key to Reservation
         inverseJoinColumns = @JoinColumn(name = "reservation_room_id") // Foreign key to ReservationRoom
     )
+    @NotNull
     private List<ReservationRoom> reservationRooms;
 
     public Reservation() {

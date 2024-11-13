@@ -10,6 +10,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -40,7 +41,7 @@ public class RoomType implements Serializable {
     /*@Column(nullable = false)
     private Boolean canChange; //facilitate the changing of the rooms
     */
-    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private List<Rate> roomRate;
     
 //    @OneToMany(mappedBy = "roomType")

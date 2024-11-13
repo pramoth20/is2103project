@@ -43,6 +43,7 @@ public class MainApp {
     private Date checkInDate;
     private Date checkOutDate;
     private int numberOfRooms;
+    private List<RoomType> availableRoomTypes = new ArrayList<>();
     
     public MainApp() {
         
@@ -180,28 +181,38 @@ public class MainApp {
         System.out.print("Enter the number of rooms to book> ");
         int numberOfRooms = scan.nextInt();
         
-        List<RoomType> availableRoomTypes = new ArrayList<>();
+        //List<RoomType> availableRoomTypes = new ArrayList<>();
         
         try {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime checkInDateTime = LocalDateTime.parse(checkIn, formatter);
         LocalDateTime checkOutDateTime = LocalDateTime.parse(checkOut, formatter);
-        
-        
-
-
-        Date checkInDate = Date.from(checkInDateTime.atZone(ZoneId.systemDefault()).toInstant());
-        Date checkOutDate = Date.from(checkOutDateTime.atZone(ZoneId.systemDefault()).toInstant());
+          
+        checkInDate = Date.from(checkInDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        checkOutDate = Date.from(checkOutDateTime.atZone(ZoneId.systemDefault()).toInstant());
         availableRoomTypes = guestSessionBeanRemote.searchHotelRooms(checkInDate, checkOutDate, numberOfRooms);
         //availableRooms = guestSessionBeanRemote.searchHotelRooms(checkIn, checkOut);
         System.out.println("Available Room Types>");
         for (RoomType roomType : availableRoomTypes) {
             //BigDecimal totalAmount = RoomRateSessionBeanRemote.calculateTotalReservationAmount(roomType.getRoomTypeId(), LocalDate.parse(checkIn), LocalDate.parse(checkOut));
-            BigDecimal totalAmount = reservationSessionBeanRemote.calculateTotalCostForOnlineReservation(roomType, checkInDate, checkOutDate);
+            BigDecimal totalAmount = reservationSessionBeanRemote.calculateTotalCostForOnlineReservation(roomType, checkInDate, checkOutDate, numberOfRooms);
             System.out.println("- " + roomType.getName() + " | Rate: " + roomType.getRoomRate() + " | Total Amount for Stay: " + totalAmount);
+        }
+        
+        if (isLoggedIn) {
+        System.out.print("Would you like to reserve a room now? (Type in 1: Yes, 2: No)> ");
+        int proceed = scan.nextInt();
+        scan.nextLine();
+        
+        if (proceed == 1) {
+            reserveHotelRoom();
+        } else {
+            System.out.println("Returning to the main menu...");
+        }
         }
     } catch (Exception e) {
         System.out.println("Error searching for rooms: " + e.getMessage());
+        //e.printStackTrace();
     }
         return availableRoomTypes;
     }
@@ -209,7 +220,7 @@ public class MainApp {
     
     //Reserve hotel room
     private void reserveHotelRoom() {
-         List<RoomType> availableRoomTypes = searchHotelRoom();
+         //List<RoomType> availableRoomTypes = searchHotelRoom();
          
          if (availableRoomTypes.isEmpty()) {
              System.out.println("No available rooms for the specified dates.");
@@ -259,8 +270,8 @@ public class MainApp {
          
        
 
-    System.out.print("Enter number of rooms to reserve: ");
-    int numberOfRooms = scan.nextInt();
+    //System.out.print("Enter number of rooms to reserve: ");
+    //int numberOfRooms = scan.nextInt();
 
     try {
         // Example call to reserve the selected room type
@@ -269,7 +280,7 @@ public class MainApp {
         Guest guest = guestSessionBeanRemote.retrieveGuestById(loggedInGuestId);;
         Long reservationId = reservationSessionBeanRemote.createReservationForOnline(
                 guest, selectedRoomType, checkInDate, checkOutDate, numberOfRooms);
-        System.out.println("Reservation successful!");
+        System.out.println("Reservation successful! This is your Reservation Id: " + reservationId);
     } catch (Exception e) {
         System.out.println("Error making reservation: " + e.getMessage());
     }
@@ -310,28 +321,6 @@ public class MainApp {
             System.out.println("Error: " + ex.getMessage());
         }
     }
-
-    /*&private void viewAllReservations() {
-        try {
-        // Assuming `guestSessionBeanRemote.getLoggedInGuestId()` provides the logged-in guest ID.
-        
-        List<Reservation> reservations = reservationSessionBeanRemote.getAllReservationsForGuest(loggedInGuestId);
-        
-        System.out.println("All Reservations:");
-        for (Reservation reservation : reservations) {
-            System.out.println("Reservation ID: " + reservation.getReservationId());
-            System.out.println("Room Type: " + reservation.getRoomType());
-            System.out.println("Check-in Date: " + reservation.getCheckInDate());
-            System.out.println("Check-out Date: " + reservation.getCheckOutDate());
-            System.out.println("Total Cost: " + reservation.getTotalCost());
-            System.out.println("Allocated: " + (reservation.isIsAllocated() ? "Yes" : "No"));
-            System.out.println("-----------------------------------");
-        }
-    } catch (Exception ex) {
-        System.out.println("Error retrieving reservations: " + ex.getMessage());
-    }
-        
-    } */
     
     private void viewAllReservations() {
   

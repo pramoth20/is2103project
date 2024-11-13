@@ -25,15 +25,15 @@ public interface ReservationSessionBeanRemote {
     public List<Reservation> getAllReservationsForPartner(Long partnerId);
     
     public List<Reservation> getAllReservationsForGuest(Long guestId);
-    
-    public BigDecimal calculateTotalCostForOnlineReservation(RoomType roomType, Date checkInDate, Date checkOutDate);
-    
-    public BigDecimal calculateTotalCostForWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate) throws RoomRateNotFoundException;
+
+    public BigDecimal calculateTotalCostForWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomRateNotFoundException;
     
     public Long createReservationForOnline(Customer customer, RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms);
     
     public Long createWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomRateNotFoundException;
     
     public void updateReservation(Reservation reservation);
+    
+    public BigDecimal calculateTotalCostForOnlineReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms);
 
 }

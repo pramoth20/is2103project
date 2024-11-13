@@ -151,43 +151,44 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     //Calculating the amount of online reservation - Use case 23
     @Override
     public BigDecimal calculateTotalCostForOnlineReservation(RoomType roomType, Date checkInDate, Date checkOutDate) {
-    BigDecimal totalCost = BigDecimal.ZERO;
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(checkInDate);
+        BigDecimal totalCost = BigDecimal.ZERO;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(checkInDate);
 
-    // Loop from check-in date to check-out date
-    /*(while (!calendar.getTime().after(checkOutDate)) {
-        Date currentDate = calendar.getTime();
+        // Loop from check-in date to check-out date
+        /*(while (!calendar.getTime().after(checkOutDate)) {
+            Date currentDate = calendar.getTime();
 
-        // Get the prevailing rate for this day from the RoomRateSessionBean
-        BigDecimal dailyRate = roomRateSessionBean.getReservationRate(roomType, currentDate);
-
-        // Add the daily rate to the total cost
-        totalCost = totalCost.add(dailyRate);
-
-        // Move to the next day
-        calendar.add(Calendar.DATE, 1);
-    }*/
-    while (!calendar.getTime().after(checkOutDate)) {
-        Date currentDate = calendar.getTime();
-        
-        try {
             // Get the prevailing rate for this day from the RoomRateSessionBean
             BigDecimal dailyRate = roomRateSessionBean.getReservationRate(roomType, currentDate);
+
             // Add the daily rate to the total cost
             totalCost = totalCost.add(dailyRate);
-        } catch (NoApplicableRateException e) {
-            // Handle the exception (e.g., log it, skip this date, or set a default rate)
-            System.err.println("No applicable rate found for " + currentDate + ": " + e.getMessage());
-            // Optionally, you could set a default rate or skip this day in the cost calculation.
+
+            // Move to the next day
+            calendar.add(Calendar.DATE, 1);
+        }*/
+        while (!calendar.getTime().after(checkOutDate)) {
+            Date currentDate = calendar.getTime();
+
+            try {
+                // Get the prevailing rate for this day from the RoomRateSessionBean
+                BigDecimal dailyRate = roomRateSessionBean.getReservationRate(roomType, currentDate);
+                // Add the daily rate to the total cost
+                totalCost = totalCost.add(dailyRate);
+            } catch (NoApplicableRateException e) {
+                // Handle the exception (e.g., log it, skip this date, or set a default rate)
+                System.err.println("No applicable rate found for " + currentDate + ": " + e.getMessage());
+                // Optionally, you could set a default rate or skip this day in the cost calculation.
+            }
+
+            // Move to the next day
+            calendar.add(Calendar.DATE, 1);
         }
 
-        // Move to the next day
-        calendar.add(Calendar.DATE, 1);
+        return totalCost;
     }
-
-    return totalCost;
-}
+    
     @Override
     public BigDecimal calculateTotalCostForWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate) throws RoomRateNotFoundException {
     BigDecimal totalCost = BigDecimal.ZERO;

@@ -25,9 +25,10 @@ public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSess
     private EntityManager em;
 
     
+
     @EJB
     private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
-    
+  
     @Override
     public Partner login(String email, String password) throws PartnerNotFoundException, InvalidPasswordException {
         try {

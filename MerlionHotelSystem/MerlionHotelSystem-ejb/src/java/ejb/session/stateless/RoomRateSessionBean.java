@@ -14,9 +14,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import util.exception.InputDataValidationException;
 import util.exception.NoApplicableRateException;
 import util.exception.RoomRateNotFoundException;
@@ -27,9 +24,6 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
-
-    private final ValidatorFactory validatorFactory;
-    private final Validator validator;
        
 
     /*public Rate createRate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
@@ -39,17 +33,14 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         return roomRate;
     }  */
     
-    public RoomRateSessionBean() {
-        validatorFactory = Validation.buildDefaultValidatorFactory();
-        validator = validatorFactory.getValidator();
-    }
-    
     @Override
-    public Rate createRate(Rate rate) {
-    em.persist(rate);
-    em.flush();  // Ensure the rate is persisted and the ID is generated
-    return rate;
-}
+    public Long createRate(Rate rate) {
+        em.persist(rate);
+        em.flush();  // Ensure the rate is persisted and the ID is generated
+        em.refresh(rate);  // Refresh to sync with the database to get the generated ID
+
+        return rate.getRateId();  // Return the generated ID of the persisted Rate
+    }
     
     //View Room Details
 
@@ -66,40 +57,28 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     public Rate updateRoomRateDetails(Rate updatedRate) throws RoomRateNotFoundException, UpdateRoomRateException, InputDataValidationException {
         // Step 1: Basic validation to ensure `updatedRate` and its ID are present
         if (updatedRate != null && updatedRate.getRateId() != null) {
-            // Step 2: Perform validation using the Validator
-            Set<ConstraintViolation<Rate>> constraintViolations = validator.validate(updatedRate);
-            
-            if (constraintViolations.isEmpty()) {
-                // Step 3: Retrieve existing rate entity from the database
-                Rate rateToUpdate = em.find(Rate.class, updatedRate.getRateId());
-                if (rateToUpdate == null) {
-                    throw new RoomRateNotFoundException("Rate with ID " + updatedRate.getRateId() + " not found.");
-                }
-                
-                if (!rateToUpdate.getRoomType().equals(updatedRate.getRoomType())) {
+            Rate rateToUpdate = em.find(Rate.class, updatedRate.getRateId());
+            if (rateToUpdate == null) {
+                throw new RoomRateNotFoundException("Rate with ID " + updatedRate.getRateId() + " not found.");
+            }
+            if (!rateToUpdate.getRoomType().equals(updatedRate.getRoomType())) {
                 throw new UpdateRoomRateException("Room type cannot be changed for an existing rate.");
             }
+            // Step 2: Update the existing fields with values from updatedRate
+            rateToUpdate.setName(updatedRate.getName());
+            rateToUpdate.setRoomType(updatedRate.getRoomType());
+            rateToUpdate.setRateType(updatedRate.getRateType());
+            rateToUpdate.setRatePerNight(updatedRate.getRatePerNight());
+            rateToUpdate.setStartDate(updatedRate.getStartDate());
+            rateToUpdate.setEndDate(updatedRate.getEndDate());
+            rateToUpdate.setIsDisabled(updatedRate.getIsDisabled());
+            rateToUpdate.setIsAvailable(updatedRate.getIsAvailable());
 
-                // Step 4: Update the existing fields with values from updatedRate
-                rateToUpdate.setName(updatedRate.getName());
-                rateToUpdate.setRoomType(updatedRate.getRoomType());
-                rateToUpdate.setRateType(updatedRate.getRateType());
-                rateToUpdate.setRatePerNight(updatedRate.getRatePerNight());
-                rateToUpdate.setStartDate(updatedRate.getStartDate());
-                rateToUpdate.setEndDate(updatedRate.getEndDate());
-                rateToUpdate.setIsDisabled(updatedRate.getIsDisabled());
-                rateToUpdate.setIsAvailable(updatedRate.getIsAvailable());
+            // Step 3: Merge the updated entity
+            em.merge(rateToUpdate);
+            return rateToUpdate;
 
-                // Step 5: Merge the updated entity
-                em.merge(rateToUpdate);
-                return rateToUpdate;
-
-            } else {
-                // Step 6: Handle constraint violations
-                throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
-            }
         } else {
-            // If updatedRate or its ID is null, throw an exception
             throw new RoomRateNotFoundException("Rate ID not provided for rate to be updated.");
         }
     }

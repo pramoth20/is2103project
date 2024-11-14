@@ -96,6 +96,13 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
         }                        
     }
     
+    @Override
+    public void logout(Employee employee) {
+        employee.setLoggedIn(false);
+        em.merge(employee); // Persist the updated state
+        em.flush(); // Ensure the logout state is reflected in the database immediately
+    }
+    
     private void setEmployeeRole(Employee employee) {
         EmployeeRole role = employee.getPosition();
         
@@ -117,14 +124,14 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     }
     }
     
-    @Override
-    public void employeeLogout(Employee employee) {
-        if (employee.isLoggedIn()) {
-            employee.setLoggedIn(false);
-        } else {
-            throw new IllegalStateException("Employee is not logged in!");
-        }
-    }
+//    @Override
+//    public void employeeLogout(Employee employee) {
+//        if (employee.isLoggedIn()) {
+//            employee.setLoggedIn(false);
+//        } else {
+//            throw new IllegalStateException("Employee is not logged in!");
+//        }
+//    }
     
     
         

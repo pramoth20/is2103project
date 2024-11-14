@@ -27,5 +27,5 @@ public interface PartnerSessionBeanLocal {
     public Partner login(String email, String password) throws PartnerNotFoundException, InvalidPasswordException;
 
     public List<RoomType> searchAvailableRoomsForPartner(Date checkInDate, Date checkOutDate, int numberOfRooms) throws InvalidDateException;
-    
+
 }

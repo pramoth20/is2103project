@@ -24,6 +24,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.DecimalMin;
@@ -83,6 +84,10 @@ public class Reservation implements Serializable {
     )
     @NotNull
     private List<ReservationRoom> reservationRooms;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "room_type_id")
+    private RoomType RoomType;
 
     public Reservation() {
         rates = new ArrayList<>();
@@ -91,7 +96,7 @@ public class Reservation implements Serializable {
 
 
     public Reservation(boolean isAllocated, Date reservationDate, Date checkInDate, Date checkOutDate, 
-            Customer customer, BigDecimal totalCost, ReservationType reservationType) {
+            Customer customer, BigDecimal totalCost, ReservationType reservationType, RoomType RoomType) {
         this();
         this.isAllocated = isAllocated;
         this.reservationDate = reservationDate;
@@ -100,6 +105,7 @@ public class Reservation implements Serializable {
         this.customer = customer;
         this.totalCost = totalCost;
         this.reservationType = reservationType;
+        this.RoomType = RoomType;
     }
 
     // New constructor to handle RoomType parameter
@@ -246,5 +252,19 @@ public class Reservation implements Serializable {
     
     public void addReservationRoom(ReservationRoom reservationRoom) {
         reservationRooms.add(reservationRoom);
+    }
+    
+    /**
+     * @return the RoomType
+     */
+    public RoomType getRoomType() {
+        return RoomType;
+    }
+
+    /**
+     * @param RoomType the RoomType to set
+     */
+    public void setRoomType(RoomType RoomType) {
+        this.RoomType = RoomType;
     }
 }

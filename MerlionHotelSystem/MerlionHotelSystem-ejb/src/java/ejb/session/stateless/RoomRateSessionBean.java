@@ -129,12 +129,12 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     //Reservation rate for each day 
     @Override
     public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException {
+//        System.out.println("**/**" + roomType);
+//        System.out.println("**/**" + date);
         List<Rate> rates = roomType.getRoomRate();
+        System.out.println(rates.size());
         BigDecimal reservationRate = null;
         
-        
-
-
         // Priority 1: Promotion Rate
         for (Rate rate : rates) {
             if (rate.getRateType() == RateType.PROMOTION && isDateWithinRange(rate, date)) {

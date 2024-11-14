@@ -54,12 +54,10 @@ public class RoomType implements Serializable {
     private RoomType nextRoomType;
 
     
-    
     /*@Column(nullable = false)
     private Boolean canChange; //facilitate the changing of the rooms
     */
-    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-
+    @OneToMany(mappedBy = "RoomType", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private List<Rate> roomRate;
 
     @Column(nullable = false)

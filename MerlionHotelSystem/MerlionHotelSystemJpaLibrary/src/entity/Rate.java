@@ -40,9 +40,9 @@ public class Rate implements Serializable {
     @Column(nullable = false, unique = true, length = 64)
     private String name;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    private RoomType roomType;  // Association with RoomType entity
+    @ManyToOne
+    @JoinColumn(name = "room_type_id", nullable = false)
+    private RoomType RoomType;  // Association with RoomType entity
 
     @Enumerated(EnumType.STRING)
     private RateType rateType;  // Published, Normal, Peak, Promotion
@@ -83,9 +83,9 @@ public class Rate implements Serializable {
 //    }
     
     // Constructor for Peak and Promotion rates (with start and end dates)
-    public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
+    public Rate(String name, RoomType RoomType, RateType rateType, BigDecimal ratePerNight, Date startDate, Date endDate) {
         this.name = name;
-        this.roomType = roomType;
+        this.RoomType = RoomType;
         this.rateType = rateType;
         this.ratePerNight = ratePerNight;
         this.startDate = startDate;
@@ -93,9 +93,9 @@ public class Rate implements Serializable {
     }
 
     // Overloaded constructor for Normal and Published rates (no start and end dates)
-    public Rate(String name, RoomType roomType, RateType rateType, BigDecimal ratePerNight) {
+    public Rate(String name, RoomType RoomType, RateType rateType, BigDecimal ratePerNight) {
         this.name = name;
-        this.roomType = roomType;
+        this.RoomType = RoomType;
         this.rateType = rateType;
         this.ratePerNight = ratePerNight;
         this.startDate = null;
@@ -155,11 +155,11 @@ public class Rate implements Serializable {
     }
 
     public RoomType getRoomType() {
-        return roomType;
+        return RoomType;
     }
 
-    public void setRoomType(RoomType roomType) {
-        this.roomType = roomType;
+    public void setRoomType(RoomType RoomType) {
+        this.RoomType = RoomType;
     }
 
     public RateType getRateType() {

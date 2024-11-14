@@ -208,9 +208,10 @@ public class MainApp {
         checkInDate = Date.from(checkInDateTime.atZone(ZoneId.systemDefault()).toInstant());
         checkOutDate = Date.from(checkOutDateTime.atZone(ZoneId.systemDefault()).toInstant());
         availableRoomTypes = guestSessionBeanRemote.searchHotelRooms(checkInDate, checkOutDate, numberOfRooms);
-        //availableRooms = guestSessionBeanRemote.searchHotelRooms(checkIn, checkOut);
+        //availableRooms = guestSessionBeanRemote.searchHotelRooms(checkIn, c   heckOut);
         System.out.println("Available Room Types>");
         for (RoomType roomType : availableRoomTypes) {
+            
             //BigDecimal totalAmount = RoomRateSessionBeanRemote.calculateTotalReservationAmount(roomType.getRoomTypeId(), LocalDate.parse(checkIn), LocalDate.parse(checkOut));
             BigDecimal totalAmount = reservationSessionBeanRemote.calculateTotalCostForOnlineReservation(roomType, checkInDate, checkOutDate, numberOfRooms);
             System.out.println("- " + roomType.getName() + " | Rate: " + roomType.getRoomRate() + " | Total Amount for Stay: " + totalAmount);
@@ -290,38 +291,39 @@ public class MainApp {
             if (isSameDayCheckIn && isAfter2am) {
                 Reservation reservation = reservationSessionBeanRemote.findReservation(reservationId);
                 try {
-                    roomAllocationSessionBeanRemote.allocateRoomImmediately(reservation, selectedRoomType);
+                    roomAllocationSessionBeanRemote.allocateRoomImmediately(reservation);
                     System.out.println("Rooms allocated immediately for same-day check-in.");
                 } catch (RoomAllocationException e) {
                     System.out.println("Immediate room allocation failed: " + e.getMessage());
 
                 }
             } else {
-                //call asycnchoronous
-            }
-        } catch (Exception e) {
-            System.out.println("Error making reservation: " + e.getMessage());
+            // Call the timer-based allocation method manually
+            System.out.println("Triggering scheduled room allocation method for today.");
+            try {
+                roomAllocationSessionBeanRemote.allocateRoomReservationsToday();
+            } catch (Exception e) {
+                System.out.println("Error making reservation: " + e.getMessage());
         }
 
 
 
-        
+            }  
+    } catch (Exception e) {
+        System.out.println("An unexpected error occurred: " + e.getMessage());
+    }
     }
 
     private void viewReservationDetails() {
         Scanner scan = new Scanner(System.in);
-        /*if (!isLoggedIn) {
-            System.out.println("Please log in to view reservation details.");
-            return;
-        }*/
         System.out.print("Enter Reservation ID> ");
         Long reservationId = scan.nextLong();
-        
+
         try {
-        Reservation reservation = reservationSessionBeanRemote.findReservation(reservationId);
-        System.out.println("Reservation Details:");
-        System.out.println("Reservation ID: " + reservation.getReservationId());
-        
+            Reservation reservation = reservationSessionBeanRemote.findReservation(reservationId);
+            System.out.println("Reservation Details:");
+            System.out.println("Reservation ID: " + reservation.getReservationId());
+
             // Retrieve RoomType from the first ReservationRoom in the list (or display each if needed)
             if (!reservation.getReservationRooms().isEmpty()) {
                 ReservationRoom reservationRoom = reservation.getReservationRooms().get(0);
@@ -335,48 +337,52 @@ public class MainApp {
                     System.out.println("Room not assigned yet.");
                 }
 
-                    System.out.println("Room Type: " + selectedRoomType);
-        } /*else {
-            System.out.println("Room Type: No room assigned");
-        }*/
-        
-        System.out.println("Check-in Date: " + reservation.getCheckInDate());
-        System.out.println("Check-out Date: " + reservation.getCheckOutDate());
-        System.out.println("Total Cost: " + reservation.getTotalCost());
-        //System.out.println("Allocated: " + (reservation.isIsAllocated() ? "Yes" : "No"));
+                // Correctly display the room type name instead of the object reference
+                RoomType roomType = reservation.getRoomType();
+                if (roomType != null) {
+                    System.out.println("Room Type: " + roomType.getName());
+                } else {
+                    System.out.println("Room Type: Not available");
+                }
+            }
+
+            System.out.println("Check-in Date: " + reservation.getCheckInDate());
+            System.out.println("Check-out Date: " + reservation.getCheckOutDate());
+            System.out.println("Total Cost: " + reservation.getTotalCost());
         } catch (ReservationNotFoundException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
     }
     
     private void viewAllReservations() {
-  
-    try {
-        List<Reservation> reservations = reservationSessionBeanRemote.getAllReservationsForGuest(loggedInGuestId);
-        System.out.println("All Reservations:");
-        for (Reservation reservation : reservations) {
-            System.out.println("Reservation ID: " + reservation.getReservationId());
-            
-            // Traverse each ReservationRoom to get Room and RoomType details
-            for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
-                Room room = reservationRoom.getRoom();
-                RoomType roomType = room.getRoomType();
-                
-                // Display room type details
-                System.out.println("Room Type: " + roomType.getName());
-                System.out.println("Room Rate: " + roomType.getRoomRate().toString());
-            }
-            
-            System.out.println("Check-in Date: " + reservation.getCheckInDate());
-            System.out.println("Check-out Date: " + reservation.getCheckOutDate());
-            System.out.println("Total Cost: " + reservation.getTotalCost());
-            System.out.println("Allocated: " + (reservation.isIsAllocated() ? "Yes" : "No"));
-            System.out.println("-----------------------------------");
-        }
-    } catch (Exception ex) {
-        System.out.println("Error retrieving reservations: " + ex.getMessage());
-    }
-    }
-    
+        try {
+            List<Reservation> reservations = reservationSessionBeanRemote.getAllReservationsForGuest(loggedInGuestId);
+            System.out.println("All Reservations:");
+            for (Reservation reservation : reservations) {
+                System.out.println("Reservation ID: " + reservation.getReservationId());
 
+                // Traverse each ReservationRoom to get Room and RoomType details
+                for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
+                    Room room = reservationRoom.getRoom();
+                    RoomType roomType = room.getRoomType();
+
+                    // Display room type details properly
+                    if (roomType != null) {
+                        System.out.println("Room Type: " + roomType.getName());
+                        System.out.println("Room Rate: " + roomType.getRoomRate().toString());
+                    } else {
+                        System.out.println("Room Type: Not available");
+                    }
+                }
+
+                System.out.println("Check-in Date: " + reservation.getCheckInDate());
+                System.out.println("Check-out Date: " + reservation.getCheckOutDate());
+                System.out.println("Total Cost: " + reservation.getTotalCost());
+                System.out.println("Allocated: " + (reservation.isIsAllocated() ? "Yes" : "No"));
+                System.out.println("-----------------------------------");
+            }
+        } catch (Exception ex) {
+            System.out.println("Error retrieving reservations: " + ex.getMessage());
+        }
+    }
 }

@@ -12,14 +12,12 @@ import entity.RoomType;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import util.exception.NoAvailableRoomsException;
 import util.exception.RoomAllocationException;
 import util.exception.RoomUnavailableException;
 
@@ -33,15 +31,15 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-   @EJB
+    @EJB
     private RoomRateSessionBeanLocal roomRateSessionBean;
     
     //Automatic Timer
     @Schedule(hour = "2", minute = "0", info = "Daily Room Allocation Timer")
     @Override
-    public void allocateRoomReservationsToday(RoomType roomType) throws RoomAllocationException {
+    public void allocateRoomReservationsToday() throws RoomAllocationException {
         Date today = new Date();
-        allocateRoom(today, roomType);
+        allocateRoom(today);
     }
     
 
@@ -75,10 +73,12 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     
     //Allocate immediately 
     @Override
-    public void allocateRoomImmediately(Reservation reservation, RoomType roomType) throws RoomAllocationException {
+    public void allocateRoomImmediately(Reservation reservation) throws RoomAllocationException {
         boolean allRoomsAllocated = true;
         Date checkInDate = reservation.getCheckInDate();
         Date checkOutDate = reservation.getCheckOutDate();
+        RoomType roomType = reservation.getRoomType();
+        
 
         for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
             try {
@@ -109,7 +109,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     
     @Override
-    public void allocateRoom(Date date, RoomType roomType) throws RoomAllocationException {
+    public void allocateRoom(Date date) throws RoomAllocationException {
     List<Reservation> reservations = getReservationForCheckInDate(date);
     boolean allocationFailed = false;  // Track if any reservation couldn't be fully allocated
 
@@ -117,6 +117,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         boolean allRoomsAllocated = true;
         Date checkInDate = reservation.getCheckInDate();
         Date checkOutDate = reservation.getCheckOutDate();
+        RoomType roomType = reservation.getRoomType();
 
         for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
             try {
@@ -160,7 +161,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     
     private List<Reservation> getReservationForCheckInDate(Date date) {
         //em.find(Reservation.class, date);
-        Query query = em.createQuery("SELECT r from Reservation r WHERE r.reservationDate = :date && r.isAllocated = false");
+        Query query = em.createQuery("SELECT r from Reservation r WHERE r.reservationDate = :date AND r.isAllocated = false", Reservation.class);
         query.setParameter("date", date);
         return query.getResultList();      
         

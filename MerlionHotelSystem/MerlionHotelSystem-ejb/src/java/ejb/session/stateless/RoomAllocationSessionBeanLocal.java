@@ -23,12 +23,11 @@ public interface RoomAllocationSessionBeanLocal {
 
     public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms)throws RoomUnavailableException;
 
-    public void allocateRoomImmediately(Reservation reservation, RoomType roomType) throws RoomAllocationException;
+    public void allocateRoomImmediately(Reservation reservation) throws RoomAllocationException;
 
-    public void allocateRoomReservationsToday(RoomType roomType) throws RoomAllocationException;
-
-
-    public void allocateRoom(Date date, RoomType roomType) throws RoomAllocationException;
+    public void allocateRoom(Date date) throws RoomAllocationException;
+    
+    public void allocateRoomReservationsToday() throws RoomAllocationException;
    
 
     

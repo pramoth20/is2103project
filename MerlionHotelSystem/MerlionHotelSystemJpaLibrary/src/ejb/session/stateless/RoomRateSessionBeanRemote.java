@@ -23,7 +23,7 @@ import util.exception.UpdateRoomRateException;
  */
 @Remote
 public interface RoomRateSessionBeanRemote {
-    public Rate createRate(Rate rate);
+    public Long createRate(Rate rate);
     
     public Rate viewRoomRateDetails(Long rateId) throws RoomRateNotFoundException;
     

@@ -25,9 +25,6 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-    public void persist(Object object) {
-        em.persist(object);
-    }
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -44,6 +41,7 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
 //    }
     
     //Create employee
+    @Override
     public Employee createEmployee(String username, String password, EmployeeRole position) {
         Employee employee = new Employee(username, password, position);
         em.persist(employee);

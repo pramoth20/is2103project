@@ -14,17 +14,22 @@ import entity.ReservationRoom;
 import entity.Room;
 import entity.RoomType;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import util.exception.GuestAlreadyExistException;
+import util.exception.GuestNotFoundException;
 import util.exception.InvalidLoginCredentialException;
 import util.exception.ReservationNotFoundException;
+import util.exception.RoomAllocationException;
 
 /**
  *
@@ -44,6 +49,7 @@ public class MainApp {
     private Date checkOutDate;
     private int numberOfRooms;
     private List<RoomType> availableRoomTypes = new ArrayList<>();
+    private RoomType selectedRoomType;
     
     public MainApp() {
         
@@ -104,8 +110,17 @@ public class MainApp {
                         searchHotelRoom();
                         break;
                     case 2:
-                        reserveHotelRoom();
+                    {
+                        try {
+                            reserveHotelRoom();
+                        } catch (GuestNotFoundException ex) {
+                            Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (ReservationNotFoundException ex) {
+                            Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
                         break;
+
                     case 3:
                         viewReservationDetails();
                         break;
@@ -178,8 +193,10 @@ public class MainApp {
         String checkIn = scan.nextLine();
         System.out.print("Enter check-out date (yyyy-MM-dd HH:mm)> ");
         String checkOut = scan.nextLine();
+        //scan.nextLine();
         System.out.print("Enter the number of rooms to book> ");
-        int numberOfRooms = scan.nextInt();
+        numberOfRooms = scan.nextInt();
+        scan.nextLine();
         
         //List<RoomType> availableRoomTypes = new ArrayList<>();
         
@@ -219,7 +236,7 @@ public class MainApp {
 
     
     //Reserve hotel room
-    private void reserveHotelRoom() {
+    private void reserveHotelRoom() throws GuestNotFoundException, ReservationNotFoundException {
          //List<RoomType> availableRoomTypes = searchHotelRoom();
          
          if (availableRoomTypes.isEmpty()) {
@@ -232,21 +249,6 @@ public class MainApp {
     );*/
          Scanner scan = new Scanner(System.in);
          String roomTypeChoice;
-         RoomType selectedRoomType = null;
-          
-         /*while (true) {
-        System.out.print("Enter the room type you want to reserve: ");
-        roomTypeChoice = scan.nextLine().trim().toLowerCase();
-
-        if (validRoomTypes.contains(roomTypeChoice)) {
-            break; // Exit the loop if the input matches a valid room type
-        } else {
-            System.out.println("Invalid room type. Please enter one of the following:");
-            for (String roomType : validRoomTypes) {
-                System.out.println("- " + roomType.substring(0, 1).toUpperCase() + roomType.substring(1));
-            }
-        }
-         }*/
     
          while (selectedRoomType == null) {
         System.out.print("Enter the room type you want to reserve: ");
@@ -267,25 +269,42 @@ public class MainApp {
             }
         }
     }
-         
-       
 
     //System.out.print("Enter number of rooms to reserve: ");
     //int numberOfRooms = scan.nextInt();
+    LocalDate today = LocalDate.now();
+    LocalTime currentTime = LocalTime.now();
+    
+    boolean isSameDayCheckIn = today.isEqual(today);
+    boolean isAfter2am = currentTime.isAfter(LocalTime.of(2, 0));
+    
+        try {
+            // Example call to reserve the selected room type
 
-    try {
-        // Example call to reserve the selected room type
-        
-        //guestSessionBeanRemote.reserveRoom(roomTypeChoice, numberOfRooms);
-        Guest guest = guestSessionBeanRemote.retrieveGuestById(loggedInGuestId);;
-        Long reservationId = reservationSessionBeanRemote.createReservationForOnline(
-                guest, selectedRoomType, checkInDate, checkOutDate, numberOfRooms);
-        System.out.println("Reservation successful! This is your Reservation Id: " + reservationId);
-    } catch (Exception e) {
-        System.out.println("Error making reservation: " + e.getMessage());
-    }
-         
-        
+            //guestSessionBeanRemote.reserveRoom(roomTypeChoice, numberOfRooms);
+            Guest guest = guestSessionBeanRemote.retrieveGuestById(loggedInGuestId);
+            Long reservationId = reservationSessionBeanRemote.createReservationForOnline(
+                    guest, selectedRoomType, checkInDate, checkOutDate, numberOfRooms);
+            System.out.println("Reservation successful! This is your Reservation ID: " + reservationId);
+
+            if (isSameDayCheckIn && isAfter2am) {
+                Reservation reservation = reservationSessionBeanRemote.findReservation(reservationId);
+                try {
+                    roomAllocationSessionBeanRemote.allocateRoomImmediately(reservation, selectedRoomType);
+                    System.out.println("Rooms allocated immediately for same-day check-in.");
+                } catch (RoomAllocationException e) {
+                    System.out.println("Immediate room allocation failed: " + e.getMessage());
+
+                }
+            } else {
+                //call asycnchoronous
+            }
+        } catch (Exception e) {
+            System.out.println("Error making reservation: " + e.getMessage());
+        }
+
+
+
         
     }
 
@@ -303,15 +322,23 @@ public class MainApp {
         System.out.println("Reservation Details:");
         System.out.println("Reservation ID: " + reservation.getReservationId());
         
-        // Retrieve RoomType from the first ReservationRoom in the list (or display each if needed)
-        if (!reservation.getReservationRooms().isEmpty()) {
-            ReservationRoom reservationRoom = reservation.getReservationRooms().get(0);
-            Room room = reservationRoom.getRoom();
-            RoomType roomType = room.getRoomType();
-            System.out.println("Room Type: " + roomType.getName());
-        } else {
+            // Retrieve RoomType from the first ReservationRoom in the list (or display each if needed)
+            if (!reservation.getReservationRooms().isEmpty()) {
+                ReservationRoom reservationRoom = reservation.getReservationRooms().get(0);
+                Room room = reservationRoom.getRoom();
+
+                if (room != null) {
+                    // Room is assigned, print the room number
+                    System.out.println("Your room has room number: " + room.getRoomNumber());
+                } else {
+                    // Room is not assigned yet
+                    System.out.println("Room not assigned yet.");
+                }
+
+                    System.out.println("Room Type: " + selectedRoomType);
+        } /*else {
             System.out.println("Room Type: No room assigned");
-        }
+        }*/
         
         System.out.println("Check-in Date: " + reservation.getCheckInDate());
         System.out.println("Check-out Date: " + reservation.getCheckOutDate());

@@ -9,6 +9,7 @@ import entity.ReservationRoom;
 import entity.RoomType;
 import enums.ReservationType;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -78,11 +79,19 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     reservation.setReservationType(ReservationType.ONLINE);
 
     // Create and add ReservationRoom entities
+        System.out.println("******** numberOfRooms=" + numberOfRooms);
+    List<ReservationRoom> reservationRooms = new ArrayList<>();
     for (int i = 0; i < numberOfRooms; i++) {
+        System.out.println("******* creating reservation room: " + i);
         ReservationRoom reservationRoom = new ReservationRoom();
-        em.persist(reservationRoom);
-        reservation.getReservationRooms().add(reservationRoom);
+        reservation.addReservationRoom(reservationRoom);
+        //em.persist(reservationRoom);
+        //reservation.getReservationRooms().add(reservationRoom);
+        //em.persist(reservationRoom);
+        //reservationRooms.add(reservationRoom);
     }
+    
+    //reservation.setReservationRooms(reservationRooms);
 
     em.persist(reservation);
     em.flush(); 
@@ -107,10 +116,12 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     reservation.setReservationType(ReservationType.WALK_IN);
 
 
+    //List<ReservationRoom> reservationRooms = new ArrayList<>();
     // Step 4: Create ReservationRoom instances and link to the Reservation
     for (int i = 0; i < numberOfRooms; i++) {
         ReservationRoom reservationRoom = new ReservationRoom();
-        reservation.getReservationRooms().add(reservationRoom);
+        //reservation.getReservationRooms().add(reservationRoom);
+        reservation.addReservationRoom(reservationRoom);
     }
 
     em.persist(reservation);
@@ -135,7 +146,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     //Reservation list for partner
     @Override
     public List<Reservation> getAllReservationsForPartner(Long partnerId) {
-        TypedQuery<Reservation> query = em.createQuery("SELECT r FROM Reservation r WHERE r.partner.id = :partnerId", Reservation.class);
+        TypedQuery<Reservation> query = em.createQuery("SELECT r FROM Reservation r WHERE r.partner.partnerId = :partnerId", Reservation.class);
         query.setParameter("partnerId", partnerId);
         return query.getResultList();
     }

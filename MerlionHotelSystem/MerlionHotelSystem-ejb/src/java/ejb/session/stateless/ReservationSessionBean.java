@@ -65,7 +65,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     @Override
    public Long createReservationForOnline(Customer customer, RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) {
     // Calculate total cost for the reservation
-    BigDecimal totalCost = calculateTotalCostForOnlineReservation(roomType, checkInDate, checkOutDate);
+    BigDecimal totalCost = calculateTotalCostForOnlineReservation(roomType, checkInDate, checkOutDate, numberOfRooms);
 
     // Create the Reservation
     Reservation reservation = new Reservation();
@@ -80,6 +80,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     // Create and add ReservationRoom entities
     for (int i = 0; i < numberOfRooms; i++) {
         ReservationRoom reservationRoom = new ReservationRoom();
+        em.persist(reservationRoom);
         reservation.getReservationRooms().add(reservationRoom);
     }
 
@@ -94,7 +95,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     @Override
     public Long createWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomRateNotFoundException {
     //Calculate the total cost of the reservation
-    BigDecimal totalCost = calculateTotalCostForWalkInReservation(roomType, checkInDate, checkOutDate);
+    BigDecimal totalCost = calculateTotalCostForWalkInReservation(roomType, checkInDate, checkOutDate, numberOfRooms);
 
     //  Create the Reservation
     Reservation reservation = new Reservation();
@@ -143,7 +144,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     //For use case 6 for guest
     @Override
     public List<Reservation> getAllReservationsForGuest(Long guestId) {
-        TypedQuery<Reservation> query = em.createQuery("SELECT r FROM Reservation r WHERE r.guest.id = :guestId", Reservation.class);
+        TypedQuery<Reservation> query = em.createQuery("SELECT r FROM Reservation r WHERE r.customer.customerId = :guestId", Reservation.class);
         query.setParameter("guestId", guestId);
         return query.getResultList();
     }
@@ -190,7 +191,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
     
     @Override
-    public BigDecimal calculateTotalCostForWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate) throws RoomRateNotFoundException {
+    public BigDecimal calculateTotalCostForWalkInReservation(RoomType roomType, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomRateNotFoundException {
     BigDecimal totalCost = BigDecimal.ZERO;
 
     BigDecimal publishedRate = roomRateSessionBean.getWalkInRate(roomType);
@@ -201,7 +202,8 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     // Loop from check-in date to check-out date (inclusive)
     while (!calendar.getTime().after(checkOutDate)) {
         // For walk-in reservations, use the same published rate for each day
-        totalCost = totalCost.add(publishedRate);
+        BigDecimal dailyTotal = publishedRate.multiply(BigDecimal.valueOf(numberOfRooms));
+        totalCost = totalCost.add(dailyTotal);
 
         // Move to the next day
         calendar.add(Calendar.DATE, 1);

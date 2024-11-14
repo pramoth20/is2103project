@@ -9,17 +9,18 @@ import entity.Reservation;
 import entity.ReservationRoom;
 import entity.Room;
 import entity.RoomType;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import util.exception.NoAvailableRoomsException;
 import util.exception.RoomAllocationException;
 import util.exception.RoomUnavailableException;
 
@@ -85,13 +86,17 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             } catch (RoomUnavailableException ex) {
                 // Handle the exception by trying to allocate a higher room type if available
                 RoomType nextRoomType = reservationRoom.getRoom().getRoomType().getNextRoomType();
-                if (nextRoomType != null && !findAvailableRoomsForPeriod(nextRoomType, checkInDate, checkOutDate).isEmpty()) {
-                    // Exception report: Room not available, but upgrade possible
-                    createExceptionReportForUpgradeAvailable(reservationRoom);
-                } else {
-                    // Exception report: No room available, and no upgrade option
-                    createExceptionReportForNoUpgradeAvailable(reservationRoom);
-                    allRoomsAllocated = false; // Mark this reservation as not fully allocated
+                try {
+                    if (nextRoomType != null && !findAvailableRoomsForPeriod(nextRoomType, checkInDate, checkOutDate).isEmpty()) {
+                        // Exception report: Room not available, but upgrade possible
+                        createExceptionReportForUpgradeAvailable(reservationRoom);
+                    } else {
+                        // Exception report: No room available, and no upgrade option
+                        createExceptionReportForNoUpgradeAvailable(reservationRoom);
+                        allRoomsAllocated = false; // Mark this reservation as not fully allocated
+                    }
+                } catch (RoomUnavailableException ex1) {
+                    
                 }
             }
         }
@@ -122,15 +127,20 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 // Handle the exception by trying to allocate a higher room type if available
                 RoomType nextRoomType = reservationRoom.getRoom().getRoomType().getNextRoomType();
 
-                if (nextRoomType != null && !findAvailableRoomsForPeriod(nextRoomType, checkInDate, checkOutDate).isEmpty()) {
-                    // Exception report: Room not available, but upgrade possible
-                    createExceptionReportForUpgradeAvailable(reservationRoom);
-                } else {
-                    // Exception report: No room available, and no upgrade option
-                    createExceptionReportForNoUpgradeAvailable(reservationRoom);
-                    allRoomsAllocated = false;  // Mark this reservation as not fully allocated
+                try {
+                    if (nextRoomType != null && !findAvailableRoomsForPeriod(nextRoomType, checkInDate, checkOutDate).isEmpty()) {
+                        // Exception report: Room not available, but upgrade possible
+                        createExceptionReportForUpgradeAvailable(reservationRoom);
+                    } else {
+                        // Exception report: No room available, and no upgrade option
+                        createExceptionReportForNoUpgradeAvailable(reservationRoom);
+                        allRoomsAllocated = false;  // Mark this reservation as not fully allocated
+                    }
+                } catch (RoomUnavailableException ex1) {
+                    
                 }
-            }
+            } 
+          
         }
 
         // If not all rooms were allocated, mark the reservation as partially allocated
@@ -149,7 +159,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     
     
     private List<Reservation> getReservationForCheckInDate(Date date) {
-        em.find(Reservation.class, date);
+        //em.find(Reservation.class, date);
         Query query = em.createQuery("SELECT r from Reservation r WHERE r.reservationDate = :date && r.isAllocated = false");
         query.setParameter("date", date);
         return query.getResultList();      
@@ -187,22 +197,76 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         return query.getResultList();
     }*/
     
-    private List<Room> findAvailableRoomsForPeriod(RoomType roomType, Date checkInDate, Date checkOutDate) {
-        // Query to check room availability for the entire stay period (check-in to check-out)
-        Query query = em.createQuery("SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAvailable = TRUE "
-                                     + "AND r.id NOT IN (SELECT rr.room.id FROM ReservationRoom rr "
-                                     + "WHERE rr.reservation.checkInDate < :checkOutDate "
-                                     + "AND rr.reservation.checkOutDate > :checkInDate)");
-        query.setParameter("roomType", roomType);
-        query.setParameter("checkInDate", checkInDate);
-        query.setParameter("checkOutDate", checkOutDate);
-        
-        return query.getResultList();
+    private List<Room> findAvailableRoomsForPeriod(RoomType roomType, Date checkInDate, Date checkOutDate) throws RoomUnavailableException {
+        List<Room> availableRooms = new ArrayList<>();
+    try {
+        //  Get all reservations that are reserved for any part of the duration of the stay
+        Query reservationQuery = em.createQuery(
+                "SELECT DISTINCT res FROM Reservation res " +
+                        "JOIN res.reservationRooms rr "                      
+                + "WHERE rr.room.roomType = :roomType " 
+                + "AND res.checkInDate < :checkOutDate "
+                + "AND res.checkOutDate > :checkInDate"
+        );
+        reservationQuery.setParameter("roomType", roomType);
+        reservationQuery.setParameter("checkInDate", checkInDate);
+        reservationQuery.setParameter("checkOutDate", checkOutDate);
+
+        List<Reservation> overlappingReservations = reservationQuery.getResultList();
+
+        // If no overlapping reservations are found, simply return all available rooms
+        if (overlappingReservations == null || overlappingReservations.isEmpty()) {
+            Query roomQuery = em.createQuery(
+                    "SELECT r FROM Room r "
+                    + "WHERE r.roomType = :roomType "
+                    + "AND r.isAvailable = TRUE"
+            );
+            roomQuery.setParameter("roomType", roomType);
+            availableRooms = roomQuery.getResultList();
+            return availableRooms;
+        }
+
+        //Collect all reserved room IDs from the overlapping reservations
+        List<Long> reservedRoomIds = new ArrayList<>();
+        for (Reservation reservation : overlappingReservations) {
+            for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
+                reservedRoomIds.add(reservationRoom.getRoom().getRoomId());
+            }
+        }
+
+        // Step 4: Retrieve available rooms of the specified type that are not reserved for the period
+        Query roomQuery = em.createQuery(
+                "SELECT r FROM Room r "
+                + "WHERE r.roomType = :roomType "
+                + "AND r.isAvailable = TRUE "
+                + "AND r.roomId NOT IN :reservedRoomIds"
+        );
+        roomQuery.setParameter("roomType", roomType);
+        roomQuery.setParameter("reservedRoomIds", reservedRoomIds);
+
+        availableRooms = roomQuery.getResultList();
+
+        // If no available rooms found, throw the custom exception
+        if (availableRooms == null || availableRooms.isEmpty()) {
+            throw new RoomUnavailableException("No available rooms for the selected period.");
+        }
+
+    } catch (Exception e) {
+        // Log the error message and stack trace for debugging
+        System.out.println("Error while searching for available rooms: " + e.getMessage());
+        e.printStackTrace();
+        // Optionally, rethrow the exception if you want it to propagate further
+        // throw e;
     }
+
+    return availableRooms;
+}
+        
+    
     
     //For use case 3, finding available RoomTypes, need to find avaialble rooms across all available types
     @Override
-    public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms) {
+    public List<RoomType> findAvailableRoomTypes(Date checkInDate, Date checkOutDate, int numOfRooms) throws RoomUnavailableException {
         List<RoomType> availableRoomTypes = new ArrayList<>();
 
         // Fetch all room types
@@ -210,12 +274,12 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
         // For each room type, check if there is at least one available room for the entire period
         for (RoomType roomType : allRoomTypes) {
-            List<Room> availableRooms = findAvailableRoomsForPeriod(roomType, checkInDate, checkOutDate);
+        List<Room> availableRooms = findAvailableRoomsForPeriod(roomType, checkInDate, checkOutDate);
 
-            if (availableRooms.size() >= numOfRooms) {
-                availableRoomTypes.add(roomType);
-            }
+        if (availableRooms.size() >= numOfRooms) {
+            availableRoomTypes.add(roomType);
         }
+    }
 
         return availableRoomTypes;
     }

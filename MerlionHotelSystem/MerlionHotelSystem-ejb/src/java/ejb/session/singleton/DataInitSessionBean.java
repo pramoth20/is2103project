@@ -57,6 +57,7 @@ public class DataInitSessionBean {
         employeeSessionBeanLocal.createEmployee("guestrelo", "password", EmployeeRole.GUEST_RELATION_OFFICER);
     }
 
+
     private void initializeRoomTypeData() throws RoomTypeNotFoundException {
         // Create all RoomType instances
         RoomType deluxeRoom = new RoomType("Deluxe Room");

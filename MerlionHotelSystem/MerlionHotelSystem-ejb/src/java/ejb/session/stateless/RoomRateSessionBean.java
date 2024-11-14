@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -130,6 +131,9 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     public BigDecimal getReservationRate(RoomType roomType, Date date) throws NoApplicableRateException {
         List<Rate> rates = roomType.getRoomRate();
         BigDecimal reservationRate = null;
+        
+        
+
 
         // Priority 1: Promotion Rate
         for (Rate rate : rates) {

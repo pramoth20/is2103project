@@ -25,7 +25,8 @@ public interface EmployeeSessionBeanRemote {
     
     public Employee login(String username, String password) throws InvalidLoginCredentialException;
     
-    public void employeeLogout(Employee employee);
+//    public void employeeLogout(Employee employee);
     
     public Employee createEmployee(String username, String password, EmployeeRole position);
+    public void logout(Employee employee) throws EmployeeNotFoundException;
 }

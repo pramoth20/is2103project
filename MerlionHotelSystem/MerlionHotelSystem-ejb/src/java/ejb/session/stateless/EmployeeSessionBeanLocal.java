@@ -28,8 +28,10 @@ public interface EmployeeSessionBeanLocal {
 
     public Employee retrieveEmployeeByUsername(String username) throws EmployeeNotFoundException;
 
-    public void employeeLogout(Employee employee);
+//    public void employeeLogout(Employee employee);
 
     public Employee createEmployee(String username, String password, EmployeeRole position);
+
+    public void logout(Employee employee) throws EmployeeNotFoundException;
     
 }

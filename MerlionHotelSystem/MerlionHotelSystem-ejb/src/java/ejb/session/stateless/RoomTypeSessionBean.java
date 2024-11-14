@@ -19,12 +19,11 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-   public RoomType createRoomType(String name) {
-       RoomType roomType = new RoomType(name);
-       em.persist(roomType);
-
+    // Create Room Type with additional attributes
+    public RoomType createRoomType(RoomType newRoomType) {
+        em.persist(newRoomType);
         em.flush();
-        return roomType;
+        return newRoomType;
     }
 
     // View Room Type Details
@@ -49,16 +48,28 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         }
     }
 
-    // Update Room Type
+    // Update Room Type with new attributes
     @Override
-    public RoomType updateRoomType(Long roomTypeId, String name) throws RoomTypeNotFoundException {
-        RoomType roomType = em.find(RoomType.class, roomTypeId);
+    public RoomType updateRoomType(RoomType roomTypeToUpdate) throws RoomTypeNotFoundException {
+        RoomType roomType = em.find(RoomType.class, roomTypeToUpdate.getRoomTypeId());
         if (roomType == null) {
-            throw new RoomTypeNotFoundException("Room Type with ID " + roomTypeId + " cannot be found and updated.");
+            throw new RoomTypeNotFoundException("Room Type with ID " + roomTypeToUpdate.getRoomTypeId() + " cannot be found and updated.");
         }
 
-        if (name != null) {
-            roomType.setName(name);
+        // Update each attribute if a new value is provided
+        if (roomTypeToUpdate.getName() != null) {
+            roomType.setName(roomTypeToUpdate.getName());
+        }
+        if (roomTypeToUpdate.getDescription() != null) {
+            roomType.setDescription(roomTypeToUpdate.getDescription());
+        }
+            roomType.setSize(roomTypeToUpdate.getSize());
+        if (roomTypeToUpdate.getBed() != null) {
+            roomType.setBed(roomTypeToUpdate.getBed());
+        }
+            roomType.setCapacity(roomTypeToUpdate.getCapacity());
+        if (roomTypeToUpdate.getAmenities() != null) {
+            roomType.setAmenities(roomTypeToUpdate.getAmenities());
         }
 
         em.merge(roomType);
@@ -85,7 +96,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         }
     }
 
-    // Retrieve All Room Types
+    // Retrieve All Room Types (excluding disabled ones)
     @Override
     public List<RoomType> retrieveAllRoomTypes() {
         Query query = em.createQuery("SELECT r FROM RoomType r WHERE r.isDisabled = FALSE");

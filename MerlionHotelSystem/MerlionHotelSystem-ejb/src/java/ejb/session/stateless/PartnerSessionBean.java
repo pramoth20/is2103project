@@ -25,6 +25,7 @@ public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSess
             return partner.getPartnerId();
     }*/
     
+    @Override
     public Partner login(String email, String password) throws PartnerNotFoundException, InvalidPasswordException {
         try {
             // Query to find partner by email and password

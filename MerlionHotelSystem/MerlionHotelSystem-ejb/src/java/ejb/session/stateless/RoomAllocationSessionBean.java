@@ -12,7 +12,6 @@ import entity.RoomType;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
@@ -40,9 +39,9 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     //Automatic Timer
     @Schedule(hour = "2", minute = "0", info = "Daily Room Allocation Timer")
     @Override
-    public void allocateRoomReservationsToday() throws RoomAllocationException {
+    public void allocateRoomReservationsToday(RoomType roomType) throws RoomAllocationException {
         Date today = new Date();
-        allocateRoom(today);
+        allocateRoom(today, roomType);
     }
     
 
@@ -74,15 +73,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         
     }*/
     
-    //Allocate immediately
-    public void allocateRoomImmediately(Reservation reservation) throws RoomAllocationException {
+    //Allocate immediately 
+    @Override
+    public void allocateRoomImmediately(Reservation reservation, RoomType roomType) throws RoomAllocationException {
         boolean allRoomsAllocated = true;
         Date checkInDate = reservation.getCheckInDate();
         Date checkOutDate = reservation.getCheckOutDate();
 
         for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
             try {
-                allocateRoomForReservationRoom(reservationRoom, checkInDate, checkOutDate);
+                allocateRoomForReservationRoom(reservationRoom, checkInDate, checkOutDate, roomType);
             } catch (RoomUnavailableException ex) {
                 // Handle the exception by trying to allocate a higher room type if available
                 RoomType nextRoomType = reservationRoom.getRoom().getRoomType().getNextRoomType();
@@ -109,7 +109,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     
     @Override
-    public void allocateRoom(Date date) throws RoomAllocationException {
+    public void allocateRoom(Date date, RoomType roomType) throws RoomAllocationException {
     List<Reservation> reservations = getReservationForCheckInDate(date);
     boolean allocationFailed = false;  // Track if any reservation couldn't be fully allocated
 
@@ -121,7 +121,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         for (ReservationRoom reservationRoom : reservation.getReservationRooms()) {
             try {
                 // Try to allocate a room for this reservation room
-                allocateRoomForReservationRoom(reservationRoom, checkInDate, checkOutDate);
+                allocateRoomForReservationRoom(reservationRoom, checkInDate, checkOutDate, roomType);
                 //allocateRoomForReservationRoom(reservationRoom);
             } catch (RoomUnavailableException ex) {
                 // Handle the exception by trying to allocate a higher room type if available
@@ -166,8 +166,8 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         
     }
     
-    private boolean allocateRoomForReservationRoom(ReservationRoom reservationRoom, Date checkInDate, Date checkOutDate) throws RoomUnavailableException {
-        RoomType roomType = reservationRoom.getRoom().getRoomType();
+    private boolean allocateRoomForReservationRoom(ReservationRoom reservationRoom, Date checkInDate, Date checkOutDate, RoomType roomType) throws RoomUnavailableException {
+        //RoomType roomType = reservationRoom.getRoom().getRoomType();
         //List<Room> availableRooms = findAvailableRoomsByType(roomType);
         
         List<Room> availableRooms = findAvailableRoomsForPeriod(roomType, checkInDate, checkOutDate);

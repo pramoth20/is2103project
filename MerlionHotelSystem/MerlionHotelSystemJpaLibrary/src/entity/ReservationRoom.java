@@ -37,7 +37,7 @@ public class ReservationRoom implements Serializable {
     
     //unidirectional relationship with room
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = true)
     private Room room;
     
     

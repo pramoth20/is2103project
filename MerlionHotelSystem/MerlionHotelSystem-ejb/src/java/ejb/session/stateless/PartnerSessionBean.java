@@ -1,15 +1,22 @@
 package ejb.session.stateless;
 
 import entity.Partner;
+import entity.RoomType;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import util.exception.InvalidDateException;
 import util.exception.InvalidPasswordException;
 import util.exception.PartnerExistsException;
 import util.exception.PartnerNotFoundException;
+import util.exception.RoomUnavailableException;
 
 @Stateless
 public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSessionBeanLocal {
@@ -17,14 +24,11 @@ public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSess
     @PersistenceContext(unitName = "MerlionHotelSystem-ejbPU")
     private EntityManager em;
 
-    // Use Case 5: Create New Partner
-
-    /*public Long createPartner(Partner partner) {
-            em.persist(partner);
-            em.flush(); 
-            return partner.getPartnerId();
-    }*/
     
+
+    @EJB
+    private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
+  
     @Override
     public Partner login(String email, String password) throws PartnerNotFoundException, InvalidPasswordException {
         try {
@@ -87,4 +91,25 @@ public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSess
         }
         return partners;
     }
+    
+    //Search for Available Room
+    @Override
+    public List<RoomType> searchAvailableRoomsForPartner(Date checkInDate, Date checkOutDate, int numberOfRooms) throws InvalidDateException {
+    // Validate check-in and check-out dates
+    if (!checkInDate.before(checkOutDate)) {
+        throw new InvalidDateException("Check-out date must be after check-in date.");
+    }
+
+    List<RoomType> availableRoomTypes;
+    try {
+        // Find available room types based on the requested date range and room count
+        availableRoomTypes = roomAllocationSessionBean.findAvailableRoomTypes(checkInDate, checkOutDate, numberOfRooms);       
+    } catch (RoomUnavailableException e) {
+        System.out.println("No available rooms found: " + e.getMessage());
+        availableRoomTypes = new ArrayList<>();
+    }
+
+    return availableRoomTypes;
+}
+    
 }

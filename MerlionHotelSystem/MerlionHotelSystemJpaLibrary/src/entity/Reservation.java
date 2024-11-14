@@ -244,4 +244,7 @@ public class Reservation implements Serializable {
         this.reservationType = reservationType;
     }
     
+    public void addReservationRoom(ReservationRoom reservationRoom) {
+        reservationRooms.add(reservationRoom);
+    }
 }
